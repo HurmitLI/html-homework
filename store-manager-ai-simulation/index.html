@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="店长预演舱：面向连锁零售企业管培生与储备店长的 AI 模拟上岗方案。">
+  <title>店长预演舱｜AI 模拟上岗方案</title>
+  <style>
+    :root {
+      --ink: #19241f;
+      --muted: #68716c;
+      --paper: #f6f2e8;
+      --card: #fffdf7;
+      --line: rgba(25, 36, 31, .14);
+      --green: #245f49;
+      --green-soft: #dce8df;
+      --orange: #ec6d3d;
+      --yellow: #f2ca66;
+      --shadow: 0 24px 70px rgba(38, 44, 40, .10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 87% 2%, rgba(242, 202, 102, .28), transparent 24rem),
+        linear-gradient(180deg, #f8f5ed 0%, var(--paper) 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: clip;
+    }
+
+    a { color: inherit; }
+    .page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 74px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      letter-spacing: .08em;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 760; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--green);
+      border-radius: 10px 10px 4px 10px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    .topnote { color: var(--muted); }
+
+    .hero {
+      min-height: 690px;
+      padding: 86px 0 76px;
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 72px;
+      align-items: center;
+    }
+    .hero > *, .section-head > *, .problem-panel > *, .brief-grid > *,
+    .value-grid > *, .data-lane > *, .use-flow > *, .scene-flow > * { min-width: 0; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 720;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 26px;
+      height: 2px;
+      background: var(--orange);
+    }
+    h1 {
+      margin: 22px 0 25px;
+      max-width: 720px;
+      font-family: "Songti SC", "STSong", "SimSun", serif;
+      font-size: clamp(48px, 5.5vw, 72px);
+      line-height: 1.08;
+      letter-spacing: -.045em;
+      font-weight: 700;
+    }
+    h1 em { color: var(--orange); font-style: normal; white-space: nowrap; }
+    .lead {
+      max-width: 650px;
+      margin: 0;
+      color: #4c5751;
+      font-size: 19px;
+      line-height: 1.85;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 35px; }
+    .chip {
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 253, 247, .56);
+      color: #4f5c55;
+      font-size: 13px;
+    }
+
+    .shift-card {
+      position: relative;
+      padding: 34px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 28px 28px 8px 28px;
+      color: white;
+      background: var(--green);
+      box-shadow: var(--shadow);
+    }
+    .shift-card::after {
+      content: "";
+      position: absolute;
+      right: -75px;
+      bottom: -85px;
+      width: 210px;
+      height: 210px;
+      border: 44px solid rgba(242, 202, 102, .18);
+      border-radius: 50%;
+    }
+    .shift-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 22px;
+      border-bottom: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.72);
+      font-size: 12px;
+      letter-spacing: .12em;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .live::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 5px rgba(236,109,61,.16);
+    }
+    .events { display: grid; gap: 18px; padding: 25px 0 12px; }
+    .event {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 15px;
+      align-items: start;
+    }
+    .time { color: var(--yellow); font: 700 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .event strong { display: block; margin-bottom: 3px; font-size: 16px; }
+    .event p { margin: 0; color: rgba(255,255,255,.67); font-size: 13px; line-height: 1.65; }
+    .shift-question {
+      position: relative;
+      z-index: 1;
+      margin-top: 24px;
+      padding: 19px 20px;
+      border-radius: 13px;
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.92);
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 17px;
+    }
+
+    section { padding: 92px 0; border-top: 1px solid var(--line); }
+    .section-head {
+      display: grid;
+      grid-template-columns: .7fr 1.3fr;
+      gap: 50px;
+      align-items: start;
+      margin-bottom: 52px;
+    }
+    .kicker { color: var(--orange); font-size: 12px; font-weight: 760; letter-spacing: .16em; }
+    h2 {
+      margin: 0;
+      font-family: "Songti SC", "STSong", "SimSun", serif;
+      font-size: clamp(34px, 4.2vw, 55px);
+      line-height: 1.18;
+      letter-spacing: -.025em;
+    }
+    .section-copy { margin: 12px 0 0; color: var(--muted); font-size: 16px; }
+
+    .brief-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .brief {
+      min-height: 210px;
+      padding: 27px;
+      border: 1px solid var(--line);
+      background: rgba(255,253,247,.68);
+      border-radius: 22px 22px 7px 22px;
+    }
+    .brief small { color: var(--green); font-size: 11px; font-weight: 760; letter-spacing: .12em; }
+    .brief h3 { margin: 19px 0 10px; font-size: 20px; line-height: 1.45; }
+    .brief p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .problem-panel {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 18px;
+    }
+    .quote-card {
+      padding: 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 420px;
+      background: var(--yellow);
+      border-radius: 8px 30px 30px 30px;
+    }
+    .quote-card blockquote {
+      margin: 0;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: clamp(27px, 3vw, 41px);
+      line-height: 1.4;
+      letter-spacing: -.02em;
+    }
+    .quote-card span { font-size: 13px; color: rgba(25,36,31,.65); }
+    .tension-list { display: grid; gap: 12px; }
+    .tension {
+      padding: 27px 29px;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 18px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 18px;
+    }
+    .num { color: var(--orange); font: 760 18px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .tension h3 { margin: 0 0 6px; font-size: 17px; }
+    .tension p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .solution-shell {
+      padding: 34px;
+      border-radius: 30px;
+      background: #e8eee9;
+    }
+    .scene-flow {
+      display: grid;
+      grid-template-columns: 1fr 58px 1fr 58px 1fr;
+      align-items: stretch;
+    }
+    .flow-card {
+      min-height: 220px;
+      padding: 26px;
+      border: 1px solid rgba(36,95,73,.14);
+      border-radius: 20px;
+      background: var(--card);
+    }
+    .flow-card .icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 28px;
+      border-radius: 12px;
+      color: white;
+      background: var(--green);
+      font-weight: 800;
+    }
+    .flow-card h3 { margin: 0 0 9px; font-size: 18px; }
+    .flow-card p { margin: 0; color: var(--muted); font-size: 14px; }
+    .arrow { display: grid; place-items: center; color: var(--green); font-size: 25px; }
+    .ai-note {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      margin-top: 22px;
+      padding: 21px 24px;
+      border-radius: 14px;
+      background: var(--green);
+      color: white;
+      font-size: 14px;
+    }
+    .ai-note strong { color: var(--yellow); white-space: nowrap; }
+
+    .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .value-card {
+      position: relative;
+      min-height: 320px;
+      padding: 30px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 24px 24px 8px 24px;
+    }
+    .value-card::before {
+      content: attr(data-no);
+      position: absolute;
+      right: 18px;
+      top: -24px;
+      color: rgba(36,95,73,.08);
+      font: 800 110px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .value-card h3 { position: relative; margin: 95px 0 14px; font-size: 22px; }
+    .value-card p { position: relative; margin: 0; color: var(--muted); font-size: 14px; }
+    .metric { position: relative; display: block; margin-top: 25px; color: var(--green); font-size: 12px; font-weight: 720; }
+
+    .data-lane { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+    .phase {
+      position: relative;
+      min-height: 330px;
+      padding: 31px;
+      border-top: 3px solid var(--green);
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+    .phase:first-child { border-left: 1px solid var(--line); border-radius: 18px 0 0 18px; }
+    .phase:last-child { border-radius: 0 18px 18px 0; }
+    .phase-tag { color: var(--orange); font: 760 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .phase h3 { margin: 22px 0 10px; font-size: 21px; }
+    .phase p { margin: 0; color: var(--muted); font-size: 14px; }
+    .phase ul { margin: 22px 0 0; padding: 0; list-style: none; }
+    .phase li { margin-top: 9px; padding-left: 17px; position: relative; font-size: 13px; }
+    .phase li::before { content: ""; position: absolute; left: 0; top: .72em; width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+
+    .use-flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: step; }
+    .use-step {
+      counter-increment: step;
+      min-height: 245px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      background: rgba(255,253,247,.74);
+      border-radius: 18px;
+    }
+    .use-step::before {
+      content: "0" counter(step);
+      display: block;
+      margin-bottom: 38px;
+      color: var(--orange);
+      font: 760 14px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .use-step h3 { margin: 0 0 9px; font-size: 18px; }
+    .use-step p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .closing {
+      margin: 45px 0 80px;
+      padding: 55px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 40px;
+      align-items: end;
+      border-radius: 32px 32px 8px 32px;
+      color: white;
+      background: var(--ink);
+    }
+    .closing h2 { max-width: 750px; }
+    .closing h2 em { color: var(--yellow); font-style: normal; }
+    .closing p { margin: 0; color: rgba(255,255,255,.63); font-size: 14px; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+      padding: 25px 0 40px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .hero, .section-head, .problem-panel, .closing { grid-template-columns: 1fr; }
+      .hero { min-height: auto; gap: 48px; padding-top: 60px; }
+      .brief-grid, .value-grid { grid-template-columns: 1fr; }
+      .scene-flow { grid-template-columns: 1fr; gap: 12px; }
+      .arrow { transform: rotate(90deg); min-height: 38px; }
+      .data-lane, .use-flow { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .phase, .phase:first-child, .phase:last-child { border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 18px; }
+    }
+
+    @media (max-width: 600px) {
+      .page { width: min(100% - 26px, 1180px); }
+      .topnote { display: none; }
+      .hero, section { padding: 62px 0; }
+      h1 { font-size: 46px; }
+      .lead { font-size: 16px; }
+      .shift-card, .quote-card, .solution-shell, .closing { padding: 25px; }
+      .brief-grid, .data-lane, .use-flow { grid-template-columns: 1fr; }
+      .section-head { gap: 18px; margin-bottom: 34px; }
+      .ai-note, .footer { flex-direction: column; }
+      .closing { margin-bottom: 45px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .page { width: 92%; }
+      .hero { min-height: auto; padding: 45px 0; }
+      section { padding: 52px 0; break-inside: avoid; }
+      .shift-card, .closing { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .value-card, .brief, .phase, .use-step { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">店</span><span>店长预演舱</span></div>
+      <div class="topnote">AI PRODUCT SOLUTION · 2026</div>
+    </header>
+
+    <main>
+      <section class="hero" style="border-top:0">
+        <div>
+          <div class="eyebrow">AI 模拟上岗方案</div>
+          <h1>把第一次值班，<br>提前放进<em>模拟世界</em>。</h1>
+          <p class="lead">面向连锁零售企业的门店管培生与储备店长，在真正面对顾客、员工和经营压力之前，先经历一次可重来、可复盘的完整班次。</p>
+          <div class="chips" aria-label="方案标签">
+            <span class="chip">服务对象｜连锁零售人才发展部门</span>
+            <span class="chip">使用者｜门店管培生 / 储备店长</span>
+            <span class="chip">AI 载体｜Dify</span>
+          </div>
+        </div>
+
+        <aside class="shift-card" aria-label="虚拟班次示例">
+          <div class="shift-label"><span>VIRTUAL SHIFT / 01</span><span class="live">模拟进行中</span></div>
+          <div class="events">
+            <div class="event"><span class="time">09:10</span><div><strong>一名员工临时请假</strong><p>早班人手不足，收银区已经开始排队。</p></div></div>
+            <div class="event"><span class="time">09:18</span><div><strong>促销商品库存告急</strong><p>海报仍在投放，现场顾客正在询问。</p></div></div>
+            <div class="event"><span class="time">09:25</span><div><strong>顾客投诉开始升级</strong><p>对方要求立即解释，并提出补偿诉求。</p></div></div>
+            <div class="event"><span class="time">09:30</span><div><strong>区域经理发来消息</strong><p>“十分钟后告诉我，你准备怎么处理。”</p></div></div>
+          </div>
+          <div class="shift-question">课程讲过每一条规则，但新人能否在十分钟内把它们变成正确行动？</div>
+        </aside>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div><span class="kicker">01 / 客户与场景</span></div>
+          <div><h2>真正缺少的，不是再上一节课。</h2><p class="section-copy">服务于每年批量培养门店管培生和储备店长的全国性连锁零售企业，补上“学完制度”与“独立值班”之间的实战空档。</p></div>
+        </div>
+        <div class="brief-grid">
+          <article class="brief"><small>服务客户类型</small><h3>连锁零售企业的人才发展与培训部门</h3><p>在新人正式代理店长之前，为其安排统一、可重复的情景实训。</p></article>
+          <article class="brief"><small>核心使用时点</small><h3>完成入职课程后，第一次独立值班前</h3><p>既不是基础知识教学，也不替代真实轮岗，而是正式上岗前的一次压力预演。</p></article>
+          <article class="brief"><small>选用 AI 产品</small><h3>Dify 驱动的多角色情景工作流</h3><p>让区域经理、员工和顾客拥有不同诉求，并随学员的行动继续推进事件。</p></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div><span class="kicker">02 / 核心问题</span></div>
+          <div><h2>考试能证明“记得”，却很难证明“做得到”。</h2></div>
+        </div>
+        <div class="problem-panel">
+          <div class="quote-card">
+            <blockquote>门店不会把问题一道一道地出给新人。</blockquote>
+            <span>现实工作往往是多事件并发、多人诉求冲突，以及信息并不完整。</span>
+          </div>
+          <div class="tension-list">
+            <article class="tension"><span class="num">01</span><div><h3>真实试错的代价太高</h3><p>一次错误处置可能直接影响顾客体验、员工排班和当天经营。</p></div></article>
+            <article class="tension"><span class="num">02</span><div><h3>真人陪练难以规模化</h3><p>依赖资深店长反复扮演顾客和员工，时间成本高，场景也难以复现。</p></div></article>
+            <article class="tension"><span class="num">03</span><div><h3>只看结果，看不见过程</h3><p>培训负责人难以知道新人遗漏了什么信息，又在哪一步做出了错误判断。</p></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div><span class="kicker">03 / 产品方案</span></div>
+          <div><h2>一次班次，三类角色，一份可复盘的行动记录。</h2><p class="section-copy">AI 的价值不是自动出题，而是承接新人无法预先穷举的表达，并让不同角色根据其行动产生连贯反应。</p></div>
+        </div>
+        <div class="solution-shell">
+          <div class="scene-flow">
+            <article class="flow-card"><div class="icon">1</div><h3>事件同时发生</h3><p>员工请假、商品缺货、顾客投诉在同一班次出现，信息被分散在不同角色手中。</p></article>
+            <div class="arrow" aria-hidden="true">→</div>
+            <article class="flow-card"><div class="icon">2</div><h3>新人自由处理</h3><p>学员主动询问、协调和上报，不依赖固定选项；AI角色根据沟通方式继续回应。</p></article>
+            <div class="arrow" aria-hidden="true">→</div>
+            <article class="flow-card"><div class="icon">3</div><h3>按行为复盘</h3><p>依据既定检查表，回看信息确认、风险判断、人员安排、顾客沟通与结果跟进。</p></article>
+          </div>
+          <div class="ai-note"><strong>不做笼统的人格打分</strong><span>系统只记录本次训练中可观察、可核对的关键行为，反馈用于追加训练与真人带教参考。</span></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div><span class="kicker">04 / 客户价值</span></div>
+          <div><h2>把最昂贵的第一次，变成可以重来的第二次。</h2></div>
+        </div>
+        <div class="value-grid">
+          <article class="value-card" data-no="01"><h3>先练，再上岗</h3><p>在不影响真实顾客和门店经营的环境中暴露问题，让新人先形成基本的处置顺序。</p><span class="metric">关注指标：关键步骤完成率</span></article>
+          <article class="value-card" data-no="02"><h3>同场景，可复练</h3><p>同一训练可分配给多名学员，也可让个人重复挑战，减少资深店长重复陪练。</p><span class="metric">关注指标：真人陪练时长</span></article>
+          <article class="value-card" data-no="03"><h3>看行为，再补课</h3><p>培训负责人能够看到共性遗漏，决定追加哪类训练，而不是只收到一张总分表。</p><span class="metric">关注指标：上岗后常见错误率</span></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div><span class="kicker">05 / 设计与数据</span></div>
+          <div><h2>不等待一座完整知识库，从一个班次开始。</h2><p class="section-copy">没有企业数据，可以启动原型验证；正式用于某家企业培训前，再以少量、可审核的资料完成场景校准。</p></div>
+        </div>
+        <div class="data-lane">
+          <article class="phase"><span class="phase-tag">PHASE 01 · 原型</span><h3>虚构门店，验证体验</h3><p>访谈有经验的店长和培训人员，人工编写一个通用班次，不接入真实顾客或经营数据。</p><ul><li>1个复合事件</li><li>3个AI角色</li><li>1套基础行为清单</li></ul></article>
+          <article class="phase"><span class="phase-tag">PHASE 02 · 试点</span><h3>少量资料，完成校准</h3><p>由首家客户提供最小训练材料，培训负责人审核场景与关键动作后再分配给学员。</p><ul><li>岗位职责与处理流程</li><li>现有评分标准</li><li>3—5个脱敏案例</li></ul></article>
+          <article class="phase"><span class="phase-tag">PHASE 03 · 扩展</span><h3>验证有效，再接系统</h3><p>试点证明训练有效后，通过API连接企业学习平台，同步名单、任务和训练结果。</p><ul><li>更多门店场景</li><li>岗位模板复用</li><li>训练结果回流</li></ul></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div><span class="kicker">06 / 客户使用方式</span></div>
+          <div><h2>培训负责人布置一场班次，新人完成一次行动闭环。</h2></div>
+        </div>
+        <div class="use-flow">
+          <article class="use-step"><h3>分配训练</h3><p>培训负责人选择模拟班次，发给即将独立值班的管培生。</p></article>
+          <article class="use-step"><h3>进入门店</h3><p>学员通过网页或企业学习平台进入虚拟门店，接收事件信息。</p></article>
+          <article class="use-step"><h3>处理事件</h3><p>在约20分钟内与AI员工、顾客和区域经理沟通并完成安排。</p></article>
+          <article class="use-step"><h3>复盘再练</h3><p>查看遗漏步骤与改进建议，重新挑战；负责人据此安排追加训练或真人带教。</p></article>
+        </div>
+      </section>
+
+      <aside class="closing">
+        <h2>它不是替企业判断谁更优秀，<br>而是让新人更早看见：<em>下一步该怎么做。</em></h2>
+        <p>项目名称：店长预演舱<br>产品形态：Dify AI 情景实训<br>首发场景：连锁零售管培生模拟值班</p>
+      </aside>
+    </main>
+
+    <footer class="footer"><span>AI 产品解决特定客户需求 · 解决方案思路</span><span>STORE SHIFT LAB</span></footer>
+  </div>
+</body>
+</html>
