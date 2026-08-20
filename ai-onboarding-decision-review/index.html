@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="从多轮项目筛选到店长预演舱：AI 模拟上岗方案的选型、质疑与收敛过程。">
+  <title>从新奇到成立｜AI 模拟上岗项目选型复盘</title>
+  <style>
+    :root {
+      --ink: #17201c;
+      --muted: #68716c;
+      --paper: #f4f0e7;
+      --white: #fffdf8;
+      --line: rgba(23,32,28,.15);
+      --green: #1e5c46;
+      --green-2: #31765d;
+      --mint: #dce9df;
+      --orange: #ef6a3a;
+      --orange-soft: #f8ddd1;
+      --yellow: #f0c95f;
+      --red: #b4483f;
+      --shadow: 0 24px 80px rgba(31,42,36,.10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 92% 0%, rgba(240,201,95,.24), transparent 28rem),
+        linear-gradient(180deg, #f8f5ee 0%, var(--paper) 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: clip;
+    }
+
+    .page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .serif { font-family: "Songti SC", "STSong", "SimSun", serif; }
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+      letter-spacing: .12em;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 760; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px 10px 4px 10px;
+      color: white;
+      background: var(--green);
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .top-note { color: var(--muted); }
+
+    .hero {
+      min-height: 720px;
+      padding: 86px 0 74px;
+      display: grid;
+      grid-template-columns: 1.12fr .88fr;
+      gap: 75px;
+      align-items: center;
+    }
+    .hero > *, .head > *, .grid-2 > *, .grid-3 > *, .timeline-item > *, .decision-grid > * { min-width: 0; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 780;
+      letter-spacing: .16em;
+    }
+    .eyebrow::before { content: ""; width: 27px; height: 2px; background: var(--orange); }
+    h1 {
+      max-width: 720px;
+      margin: 23px 0 25px;
+      font-family: "Songti SC", "STSong", "SimSun", serif;
+      font-size: clamp(48px, 5.6vw, 74px);
+      line-height: 1.1;
+      letter-spacing: -.045em;
+    }
+    h1 em { color: var(--orange); font-style: normal; }
+    .lead { max-width: 660px; margin: 0; color: #4e5953; font-size: 18px; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 32px; }
+    .tag {
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,253,248,.7);
+      color: #536059;
+      font-size: 12px;
+    }
+
+    .result-card {
+      position: relative;
+      overflow: hidden;
+      padding: 34px;
+      border-radius: 30px 30px 8px 30px;
+      color: white;
+      background: var(--green);
+      box-shadow: var(--shadow);
+    }
+    .result-card::after {
+      content: "";
+      position: absolute;
+      right: -75px;
+      bottom: -80px;
+      width: 210px;
+      height: 210px;
+      border: 42px solid rgba(240,201,95,.18);
+      border-radius: 50%;
+    }
+    .result-label { color: var(--yellow); font-size: 11px; font-weight: 760; letter-spacing: .16em; }
+    .result-card h2 { margin: 30px 0 14px; font-size: 30px; line-height: 1.35; }
+    .result-card > p { margin: 0; color: rgba(255,255,255,.72); font-size: 14px; }
+    .survival { position: relative; z-index: 1; display: grid; gap: 11px; margin-top: 28px; }
+    .survival div {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 11px;
+      background: rgba(255,255,255,.09);
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+    }
+    .survival b { color: var(--yellow); }
+
+    section { padding: 92px 0; border-top: 1px solid var(--line); }
+    .head {
+      display: grid;
+      grid-template-columns: .65fr 1.35fr;
+      gap: 50px;
+      margin-bottom: 48px;
+    }
+    .kicker { color: var(--orange); font-size: 12px; font-weight: 780; letter-spacing: .15em; }
+    h2 {
+      margin: 0;
+      font-family: "Songti SC", "STSong", "SimSun", serif;
+      font-size: clamp(34px, 4.3vw, 55px);
+      line-height: 1.2;
+      letter-spacing: -.03em;
+    }
+    .subcopy { margin: 13px 0 0; color: var(--muted); font-size: 15px; }
+
+    .filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .filter {
+      min-height: 220px;
+      padding: 27px;
+      border: 1px solid var(--line);
+      border-radius: 21px 21px 7px 21px;
+      background: rgba(255,253,248,.72);
+    }
+    .filter small { color: var(--green); font: 760 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .filter h3 { margin: 24px 0 9px; font-size: 19px; }
+    .filter p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .timeline { position: relative; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 63px;
+      top: 40px;
+      bottom: 40px;
+      width: 1px;
+      background: var(--line);
+    }
+    .timeline-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 128px 1fr;
+      gap: 34px;
+      padding: 0 0 48px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .stage {
+      position: relative;
+      z-index: 1;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      margin-left: 36px;
+      border: 8px solid var(--paper);
+      border-radius: 50%;
+      color: white;
+      background: var(--green);
+      font: 760 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .turn-card {
+      padding: 31px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--white);
+      box-shadow: 0 10px 35px rgba(31,42,36,.05);
+    }
+    .turn-top { display: flex; align-items: start; justify-content: space-between; gap: 25px; }
+    .turn-card h3 { margin: 0; font-size: 23px; line-height: 1.4; }
+    .status {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 760;
+    }
+    .status.drop { color: var(--red); background: #f7dfdc; }
+    .status.keep { color: var(--green); background: var(--mint); }
+    .status.turn { color: #80570d; background: #f7e8bd; }
+    .turn-desc { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+    .logic-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 23px; }
+    .logic {
+      padding: 17px 18px;
+      border-radius: 13px;
+      background: #f5f3ed;
+      font-size: 13px;
+    }
+    .logic b { display: block; margin-bottom: 5px; font-size: 11px; letter-spacing: .08em; }
+    .logic.gain b { color: var(--green); }
+    .logic.break b { color: var(--red); }
+    .turn-outcome {
+      margin-top: 13px;
+      padding-left: 15px;
+      border-left: 3px solid var(--orange);
+      color: #39453f;
+      font-size: 13px;
+    }
+
+    .pivot-quote {
+      padding: 58px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 55px;
+      align-items: end;
+      border-radius: 30px 30px 8px 30px;
+      background: var(--yellow);
+    }
+    .pivot-quote blockquote {
+      margin: 0;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.4;
+      letter-spacing: -.025em;
+    }
+    .pivot-quote p { margin: 0; color: rgba(23,32,28,.66); font-size: 14px; }
+
+    .comparison {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--white);
+    }
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .comparison-row:last-child { border-bottom: 0; }
+    .comparison-row > div { padding: 17px 22px; border-right: 1px solid var(--line); font-size: 13px; }
+    .comparison-row > div:last-child { border-right: 0; }
+    .comparison-head { color: white; background: var(--ink); font-weight: 760; }
+    .comparison .strong { color: var(--green); font-weight: 760; }
+    .comparison .weak { color: var(--red); }
+
+    .decision-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; }
+    .decision-card {
+      padding: 34px;
+      border-radius: 25px;
+      border: 1px solid var(--line);
+      background: var(--white);
+    }
+    .decision-card.dark { color: white; background: var(--green); border-color: var(--green); }
+    .decision-card small { color: var(--orange); font-size: 11px; font-weight: 760; letter-spacing: .13em; }
+    .decision-card.dark small { color: var(--yellow); }
+    .decision-card h3 { margin: 20px 0 12px; font-size: 25px; }
+    .decision-card p { margin: 0; color: var(--muted); font-size: 14px; }
+    .decision-card.dark p { color: rgba(255,255,255,.7); }
+    .decision-card ul { margin: 24px 0 0; padding: 0; list-style: none; }
+    .decision-card li { position: relative; margin-top: 10px; padding-left: 18px; font-size: 13px; }
+    .decision-card li::before { content: ""; position: absolute; left: 0; top: .75em; width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+    .decision-card.dark li::before { background: var(--yellow); }
+
+    .data-path { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .data-step {
+      min-height: 320px;
+      padding: 30px;
+      border-top: 3px solid var(--green);
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,253,248,.55);
+    }
+    .data-step:first-child { border-left: 1px solid var(--line); border-radius: 18px 0 0 18px; }
+    .data-step:last-child { border-radius: 0 18px 18px 0; }
+    .data-step span { color: var(--orange); font: 760 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .data-step h3 { margin: 21px 0 10px; font-size: 21px; }
+    .data-step p { margin: 0; color: var(--muted); font-size: 13px; }
+    .data-step strong { display: block; margin-top: 23px; font-size: 13px; }
+
+    .blueprint {
+      padding: 36px;
+      border-radius: 30px;
+      color: white;
+      background: var(--ink);
+    }
+    .blueprint-top { display: flex; justify-content: space-between; align-items: end; gap: 30px; padding-bottom: 29px; border-bottom: 1px solid rgba(255,255,255,.14); }
+    .blueprint h3 { margin: 0; font-family: "Songti SC", serif; font-size: 35px; }
+    .blueprint-top p { max-width: 420px; margin: 0; color: rgba(255,255,255,.58); font-size: 13px; }
+    .blueprint-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 25px; }
+    .blueprint-item { min-height: 180px; padding: 20px; border-radius: 15px; background: rgba(255,255,255,.07); }
+    .blueprint-item small { color: var(--yellow); font-size: 10px; font-weight: 760; letter-spacing: .1em; }
+    .blueprint-item b { display: block; margin: 31px 0 8px; font-size: 16px; }
+    .blueprint-item p { margin: 0; color: rgba(255,255,255,.6); font-size: 12px; }
+
+    .lessons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .lesson {
+      padding: 27px;
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--white);
+    }
+    .lesson-no { color: var(--orange); font: 760 16px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .lesson h3 { margin: 0 0 6px; font-size: 17px; }
+    .lesson p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .closing {
+      margin: 48px 0 78px;
+      padding: 54px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 45px;
+      align-items: end;
+      border-radius: 32px 32px 8px 32px;
+      background: var(--orange);
+    }
+    .closing h2 { color: #201b17; }
+    .closing p { margin: 0; color: rgba(32,27,23,.68); font-size: 14px; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding: 25px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+
+    @media (max-width: 900px) {
+      .hero, .head, .pivot-quote, .decision-grid, .closing { grid-template-columns: 1fr; }
+      .hero { min-height: auto; padding-top: 60px; }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .comparison-row { grid-template-columns: 1fr; }
+      .comparison-row > div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .comparison-row > div:last-child { border-bottom: 0; }
+      .data-path { grid-template-columns: 1fr; gap: 13px; }
+      .data-step, .data-step:first-child, .data-step:last-child { border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 18px; }
+      .blueprint-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 26px, 1180px); }
+      .top-note { display: none; }
+      .hero, section { padding: 62px 0; }
+      h1 { font-size: 45px; }
+      .lead { font-size: 16px; }
+      .filters, .logic-row, .lessons, .blueprint-grid { grid-template-columns: 1fr; }
+      .head { gap: 18px; margin-bottom: 34px; }
+      .timeline::before { left: 23px; }
+      .timeline-item { grid-template-columns: 48px 1fr; gap: 12px; padding-bottom: 25px; }
+      .stage { width: 40px; height: 40px; margin-left: 3px; border-width: 6px; }
+      .turn-card, .pivot-quote, .decision-card, .blueprint, .closing { padding: 24px; }
+      .turn-top, .blueprint-top, footer { flex-direction: column; align-items: start; }
+      .status { white-space: nowrap; }
+      .closing { margin-bottom: 45px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .page { width: 92%; }
+      .hero { min-height: auto; padding: 46px 0; }
+      section { padding: 52px 0; }
+      .turn-card, .filter, .decision-card, .lesson, .data-step { break-inside: avoid; }
+      .result-card, .blueprint { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+  <style id="template-v2">
+    :root {
+      --ink: #0c1424;
+      --muted: #667085;
+      --paper: #eef1f6;
+      --white: #ffffff;
+      --line: #d9dfeb;
+      --green: #315efb;
+      --green-2: #2348cf;
+      --mint: #e8edff;
+      --orange: #ff5b79;
+      --orange-soft: #ffe6eb;
+      --yellow: #d9ff57;
+      --red: #c63752;
+      --shadow: 0 18px 50px rgba(18, 30, 58, .10);
+    }
+
+    body {
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(34, 50, 80, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 50, 80, .035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .page { width: min(1240px, calc(100% - 44px)); }
+    .serif, h1, h2 { font-family: inherit; }
+
+    .topbar {
+      min-height: 68px;
+      border-bottom: 0;
+      color: #42506a;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: var(--yellow);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+    }
+    .brand { text-transform: uppercase; }
+    .top-note { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    .hero {
+      min-height: 560px;
+      margin: 14px 0 40px;
+      padding: 50px;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 48px;
+      border: 0 !important;
+      border-radius: 20px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 82% 22%, rgba(49,94,251,.48), transparent 27rem),
+        linear-gradient(140deg, #0a1221 0%, #111d35 68%, #182849 100%);
+      box-shadow: 0 26px 80px rgba(10, 18, 33, .18);
+    }
+    .eyebrow { color: var(--yellow); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .eyebrow::before { background: var(--yellow); }
+    h1 {
+      margin-top: 25px;
+      color: #fff;
+      font-size: clamp(38px, 4.3vw, 56px);
+      line-height: 1.08;
+      letter-spacing: -.055em;
+      font-weight: 760;
+    }
+    h1 em { color: var(--yellow); font-style: normal; }
+    .lead { color: #c3ccda; font-size: 17px; }
+    .hero-tags .tag {
+      border-color: rgba(255,255,255,.18);
+      color: #dce3ee;
+      background: rgba(255,255,255,.06);
+    }
+
+    .result-card {
+      padding: 31px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+      box-shadow: none;
+      backdrop-filter: blur(8px);
+    }
+    .result-card::after {
+      right: -90px;
+      bottom: -105px;
+      border-color: rgba(217,255,87,.12);
+    }
+    .result-label { color: var(--yellow); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .result-card h2 { color: #fff; font-family: inherit; font-weight: 720; letter-spacing: -.03em; }
+    .survival div {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 7px;
+      background: rgba(9,16,30,.22);
+    }
+
+    section { padding: 52px 0; border-top: 0; }
+    section + section { border-top: 1px solid var(--line); }
+    .head { grid-template-columns: 175px 1fr; gap: 32px; margin-bottom: 27px; }
+    .kicker {
+      display: inline-block;
+      padding: 7px 10px;
+      border: 1px solid #b9c5da;
+      color: #40506c;
+      background: rgba(255,255,255,.55);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    h2 {
+      color: #10192c;
+      font-size: clamp(34px, 4vw, 52px);
+      font-weight: 740;
+      letter-spacing: -.045em;
+    }
+    .subcopy { color: var(--muted); }
+
+    .filters { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .filter {
+      min-height: 168px;
+      padding: 22px;
+      border: 1px solid #d6ddeb;
+      border-radius: 10px;
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 8px 26px rgba(18,30,58,.04);
+    }
+    .filter small { color: var(--green); }
+    .filter h3 { margin-top: 23px; color: #111a2c; }
+
+    .timeline::before { left: 56px; background: #b8c2d5; }
+    .timeline-item { grid-template-columns: 112px 1fr; gap: 25px; padding-bottom: 18px; }
+    .stage {
+      width: 46px;
+      height: 46px;
+      margin-left: 33px;
+      border: 7px solid var(--paper);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--yellow);
+      box-shadow: 0 0 0 1px #c2ccdc;
+    }
+    .turn-card {
+      padding: 23px 26px;
+      border: 1px solid #d6ddeb;
+      border-left: 4px solid var(--green);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 8px 28px rgba(18,30,58,.045);
+    }
+    .turn-card h3 { color: #10192c; font-size: 21px; }
+    .status { border-radius: 5px; }
+    .status.drop { color: #9e2f45; background: #ffe5ea; }
+    .status.keep { color: #2449ca; background: #e8edff; }
+    .status.turn { color: #5c4b00; background: #edf9b7; }
+    .logic {
+      border: 1px solid #e2e6ee;
+      border-radius: 7px;
+      background: #f6f8fb;
+    }
+    .logic.gain b { color: var(--green); }
+    .logic-row { margin-top: 15px; }
+    .turn-outcome { border-left-color: var(--orange); }
+
+    .pivot-quote {
+      padding: 38px;
+      border: 0;
+      border-radius: 16px;
+      color: white;
+      background:
+        linear-gradient(120deg, rgba(49,94,251,.96), rgba(35,72,207,.96)),
+        var(--green);
+      box-shadow: var(--shadow);
+    }
+    .pivot-quote blockquote {
+      font-family: inherit;
+      font-weight: 720;
+      letter-spacing: -.035em;
+    }
+    .pivot-quote p { color: rgba(255,255,255,.72); }
+
+    .comparison {
+      border-color: #ccd5e4;
+      border-radius: 10px;
+      box-shadow: 0 10px 36px rgba(18,30,58,.06);
+    }
+    .comparison-row { border-bottom-color: #e0e5ee; }
+    .comparison-row > div { border-right-color: #e0e5ee; }
+    .comparison-head { background: var(--ink); }
+    .comparison .strong { color: var(--green); }
+
+    .choice-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .choice-card {
+      padding: 27px;
+      border: 1px solid #d3dbe8;
+      border-radius: 10px;
+      background: rgba(255,255,255,.92);
+    }
+    .choice-card.selected {
+      color: #fff;
+      border-color: var(--green);
+      background: linear-gradient(145deg, var(--green), var(--green-2));
+      box-shadow: var(--shadow);
+    }
+    .choice-label {
+      color: var(--green);
+      font: 760 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .1em;
+    }
+    .choice-card.selected .choice-label { color: var(--yellow); }
+    .choice-card h3 { margin: 17px 0 8px; font-size: 24px; }
+    .choice-card > p { margin: 0; color: var(--muted); font-size: 13px; }
+    .choice-card.selected > p { color: rgba(255,255,255,.72); }
+    .choice-card ul { margin: 19px 0 0; padding: 0; list-style: none; }
+    .choice-card li { position: relative; margin-top: 8px; padding-left: 17px; font-size: 13px; }
+    .choice-card li::before { content: ""; position: absolute; left: 0; top: .75em; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .choice-card.selected li::before { background: var(--yellow); }
+    .choice-result {
+      grid-column: 1 / -1;
+      padding: 18px 22px;
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 20px;
+      align-items: center;
+      border: 1px solid #cdd6e5;
+      border-left: 5px solid var(--orange);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .choice-result strong { color: var(--orange); font-size: 12px; letter-spacing: .08em; }
+    .choice-result p { margin: 0; font-size: 14px; }
+
+    .decision-grid { gap: 14px; }
+    .decision-card {
+      padding: 27px;
+      border-color: #d3dbe8;
+      border-radius: 12px;
+      background: rgba(255,255,255,.92);
+    }
+    .decision-card.dark {
+      color: white;
+      border-color: var(--green);
+      background: linear-gradient(145deg, var(--green), var(--green-2));
+      box-shadow: var(--shadow);
+    }
+    .decision-card small { color: var(--orange); }
+    .decision-card.dark small { color: var(--yellow); }
+
+    .data-path { gap: 12px; }
+    .data-step,
+    .data-step:first-child,
+    .data-step:last-child {
+      min-height: 235px;
+      padding: 24px;
+      border: 1px solid #d5ddea;
+      border-top: 5px solid var(--green);
+      border-radius: 9px;
+      background: rgba(255,255,255,.84);
+    }
+    .data-step span { color: var(--green); }
+
+    .blueprint {
+      padding: 29px;
+      border: 1px solid #263652;
+      border-radius: 14px;
+      background:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        var(--ink);
+      background-size: 24px 24px;
+      box-shadow: var(--shadow);
+    }
+    .blueprint h3 { font-family: inherit; font-weight: 720; }
+    .blueprint-item { border: 1px solid rgba(255,255,255,.1); border-radius: 8px; background: rgba(255,255,255,.045); }
+    .blueprint-item { min-height: 150px; }
+    .blueprint-item b { margin-top: 23px; }
+    .blueprint-item small { color: var(--yellow); }
+
+    .lessons { gap: 12px; }
+    .lesson {
+      padding: 22px;
+      border-color: #d6ddeb;
+      border-radius: 9px;
+      background: rgba(255,255,255,.9);
+    }
+    .lesson-no { color: var(--green); }
+
+    .closing {
+      margin: 28px 0 45px;
+      padding: 38px;
+      border-radius: 15px;
+      color: white;
+      background: var(--ink);
+      box-shadow: var(--shadow);
+    }
+    .closing h2 {
+      color: white;
+      font-size: clamp(25px, 2.8vw, 36px);
+      line-height: 1.35;
+      letter-spacing: -.025em;
+    }
+    .closing p { color: #aeb9cc; }
+    footer { border-top-color: #cbd3e1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @media (max-width: 900px) {
+      .hero { padding: 44px; }
+      .head { grid-template-columns: 1fr; gap: 16px; }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .choice-board { grid-template-columns: 1fr; }
+      .choice-result { grid-column: auto; grid-template-columns: 1fr; gap: 6px; }
+    }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 22px, 1240px); }
+      .hero { margin-top: 8px; padding: 34px 22px; border-radius: 12px; }
+      h1 { font-size: 34px; }
+      .filters { grid-template-columns: 1fr; }
+      .timeline::before { left: 20px; }
+      .timeline-item { grid-template-columns: 42px 1fr; gap: 10px; }
+      .stage { width: 36px; height: 36px; margin-left: 2px; border-width: 5px; }
+      .turn-card, .pivot-quote, .decision-card, .blueprint, .closing { padding: 21px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">DR</span><span>AI 产品选型记录</span></div>
+      <div class="top-note">PRODUCT DECISION LOG / 07 TURNS</div>
+    </header>
+
+    <main>
+      <section class="hero" style="border-top:0">
+        <div>
+          <div class="eyebrow">从发散到收敛</div>
+          <h1>不是找到最特别的点子，<br>而是留下最能经受<em>追问</em>的那个。</h1>
+          <p class="lead">一次围绕“AI 产品解决特定客户需求”的项目选型复盘：从家庭记忆、老年防骗、新消费创意一路回到高频企业场景，最终收敛为连锁零售管培生的 AI 模拟上岗。</p>
+          <div class="hero-tags">
+            <span class="tag">7 次关键转向</span>
+            <span class="tag">6 个判断尺度</span>
+            <span class="tag">1 个首发场景</span>
+          </div>
+        </div>
+        <aside class="result-card">
+          <div class="result-label">FINAL DIRECTION</div>
+          <h2>店长预演舱<br>AI 模拟上岗平台</h2>
+          <p>首发客户不是“所有企业”，而是批量培养门店管培生和储备店长的连锁零售企业。</p>
+          <div class="survival">
+            <div><b>✓</b><span>真实存在的上岗前训练空档</span></div>
+            <div><b>✓</b><span>AI 能承担自由对话与动态角色反应</span></div>
+            <div><b>✓</b><span>原型可用虚构案例启动</span></div>
+            <div><b>△</b><span>正式使用仍需首家客户共同校准</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">01 / 判断尺度</span></div>
+          <div><h2>每个点子，都必须回答六个问题。</h2><p class="subcopy">讨论没有把“新颖”当作唯一标准，也没有把“市场上已有”直接等同于值得做。六个尺度共同决定一个方向能否留下。</p></div>
+        </div>
+        <div class="filters">
+          <article class="filter"><small>01 / NEED</small><h3>需求是否真实发生？</h3><p>不是“理论上有帮助”，而是客户已经在为这个问题投入时间、人员或预算。</p></article>
+          <article class="filter"><small>02 / TRIGGER</small><h3>用户为什么此刻打开？</h3><p>必须存在明确触发点，不能依赖用户长期自觉、主动上传或被劝服。</p></article>
+          <article class="filter"><small>03 / PAYER</small><h3>谁使用，谁付费？</h3><p>使用者、受益者和采购方可以不同，但三者关系必须说得通。</p></article>
+          <article class="filter"><small>04 / AI FIT</small><h3>为什么需要 AI？</h3><p>如果规则引擎、固定模板或真人流程已经足够，AI 就只是包装。</p></article>
+          <article class="filter"><small>05 / DATA</small><h3>第一批数据从哪里来？</h3><p>要区分可演示的通用原型与可正式使用的企业版本，不能隐藏冷启动成本。</p></article>
+          <article class="filter"><small>06 / ANSWER</small><h3>能否在笔试中讲清楚？</h3><p>客户、痛点、产品、价值、设计和使用方式要在一页内形成闭环。</p></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">02 / 选型轨迹</span></div>
+          <div><h2>方向不是一次选中的，而是在追问中逐步排除。</h2><p class="subcopy">每一次转向都保留了一部分洞察，也暴露了一个新的结构性问题。</p></div>
+        </div>
+
+        <div class="timeline">
+          <article class="timeline-item">
+            <div class="stage">01</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>从“AI 助手”逃离：先寻找更像产品的新体验</h3><span class="status turn">起点</span></div>
+              <p class="turn-desc">最初不希望再次落入售前、售后、知识问答等常见助手形态，希望找到一个看到就想尝试、且由 AI 创造新体验的产品。</p>
+              <div class="logic-row"><div class="logic gain"><b>保留下来的洞察</b>AI 不应只负责回答，还可以采集、组织、模拟和生成结果。</div><div class="logic break"><b>很快暴露的问题</b>“不一样”并不能自动证明需求、付费和使用触发成立。</div></div>
+              <div class="turn-outcome">由此进入家庭记忆、老年服务和新消费等更具情感与体验感的方向。</div>
+            </div>
+          </article>
+
+          <article class="timeline-item">
+            <div class="stage">02</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>AI 家庭记忆故事馆：体验动人，素材基础不稳</h3><span class="status drop">放弃</span></div>
+              <p class="turn-desc">AI 采访老人，结合照片、地点和家庭成员信息，生成家庭时间线、人物关系、播客与故事书；差异点是家人共同编织记忆。</p>
+              <div class="logic-row"><div class="logic gain"><b>成立之处</b>情感价值明确，AI 承担“记忆采集与叙事引擎”，而非普通陪聊。</div><div class="logic break"><b>致命追问</b>共同照片和共同记忆从哪里来？家庭协作频率低，老人独自回忆反而更自然。</div></div>
+              <div class="turn-outcome">“家庭共建”是亮点，却不是稳定发生的基础行为；产品不能靠理想化素材供给成立。</div>
+            </div>
+          </article>
+
+          <article class="timeline-item">
+            <div class="stage">03</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>老年人防骗干预：社会价值高，介入时机太晚</h3><span class="status drop">放弃</span></div>
+              <p class="turn-desc">使用者是老年人，付费者是子女；针对“听课领红包—长期洗脑—最终购买神药”的链路，帮助老人意识到自己正在被诱导。</p>
+              <div class="logic-row"><div class="logic gain"><b>成立之处</b>问题真实、损失明确、使用者与付费者关系能够解释。</div><div class="logic break"><b>致命追问</b>子女从哪里取得课程材料？老人准备付款时为什么会主动打开另一个产品？</div></div>
+              <div class="turn-outcome">如果产品无法进入决策发生的瞬间，再正确的内容也难以改变行为。</div>
+            </div>
+          </article>
+
+          <article class="timeline-item">
+            <div class="stage">04</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>好玩的新消费产品：有尝试冲动，成本与留存不清</h3><span class="status drop">放弃</span></div>
+              <p class="turn-desc">一度转向“让人看到就觉得好玩”的消费产品，并讨论生成 60—90 秒视频的实现方式和费用。</p>
+              <div class="logic-row"><div class="logic gain"><b>成立之处</b>传播性与首次尝试动机更强，容易形成直观展示。</div><div class="logic break"><b>致命追问</b>视频生成成本不低；一次新鲜感不等于复购，付费和留存缺乏支撑。</div></div>
+              <div class="turn-outcome">继续追求特立独行，只会不断把项目推向更高成本、更弱需求的方向。</div>
+            </div>
+          </article>
+
+          <article class="timeline-item">
+            <div class="stage">05</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>回到高密度场景：客服很成立，却太像标准答案</h3><span class="status turn">关键转折</span></div>
+              <p class="turn-desc">重新梳理企业中需求密度最高的方向。智能客服具备高频、明确预算、可量化指标和成熟接口，是最容易自证的方案。</p>
+              <div class="logic-row"><div class="logic gain"><b>成立之处</b>客户、痛点、数据、使用入口和 ROI 都容易闭环。</div><div class="logic break"><b>新的问题</b>知识库＋客服＋工单过于常见，难以体现本次笔试的产品判断。</div></div>
+              <div class="turn-outcome">安全答案不等于好答案。项目需要在真实需求基础上，比成熟方案多走一步。</div>
+            </div>
+          </article>
+
+          <article class="timeline-item">
+            <div class="stage">06</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>AI 模拟训练出现：先解决“训练谁”的问题</h3><span class="status keep">保留方向</span></div>
+              <p class="turn-desc">AI 可以扮演多个职场角色，让用户处理会议、冲突和经营任务。但最初把产品经理、项目经理、新任管理者和管培生都写成客户，范围再次失焦。</p>
+              <div class="logic-row"><div class="logic gain"><b>目标人群判断</b>新任管理者需求真实但竞争明显；管培生本就处于企业培养与考核体系中。</div><div class="logic break"><b>剔除的假设</b>产品经理和项目经理的基础协作能力通常属于入职要求，通用训练的独立采购理由偏弱。</div></div>
+              <div class="turn-outcome">管培生最适合做首个示范人群，但“只服务管培生”又会导致市场周期性强、席位有限。</div>
+            </div>
+          </article>
+
+          <article class="timeline-item">
+            <div class="stage">07</div>
+            <div class="turn-card">
+              <div class="turn-top"><h3>最终收敛：平台可以拓展，笔试必须先具体</h3><span class="status keep">最终选择</span></div>
+              <p class="turn-desc">市场层面将产品理解为“AI 新员工虚拟上岗”；笔试表达则进一步锁定连锁零售企业的门店管培生和储备店长。</p>
+              <div class="logic-row"><div class="logic gain"><b>为什么选择零售门店</b>第一次独立值班是明确触发点，多事件并发、顾客与员工冲突适合动态模拟。</div><div class="logic break"><b>仍需承认的边界</b>正式训练必须由企业校准流程与评分标准，不能把通用原型直接当成企业版本。</div></div>
+              <div class="turn-outcome">最终形成“一个具体客户、一个高压班次、三个 AI 角色、一套行为复盘”的首版产品。</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="pivot-quote">
+          <blockquote>绕回客服，并不是白走一圈。它揭示了一个陷阱：越追求“绝对稳妥”，答案越容易退化成所有人都会写的方案。</blockquote>
+          <p>真正需要平衡的不是“创新或落地”二选一，而是找到一个已有真实需求、同时允许 AI 创造新交互形态的切口。</p>
+        </div>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">03 / 最终二选一</span></div>
+          <div><h2>智能客服更成熟，为什么这次作业仍选模拟上岗？</h2><p class="subcopy">不是判断哪个项目更好，而是先明确目标：做生意更看重商业确定性，做笔试还要体现产品设计能力。</p></div>
+        </div>
+        <div class="choice-board">
+          <article class="choice-card">
+            <span class="choice-label">如果目标是尽快卖给企业</span>
+            <h3>智能客服更稳</h3>
+            <p>企业已经理解这类产品，也更容易计算投入和回报。</p>
+            <ul><li>需求高频，采购理由明确</li><li>技术、数据和效果指标相对成熟</li><li>问题是方案常见，笔试中不容易被记住</li></ul>
+          </article>
+          <article class="choice-card selected">
+            <span class="choice-label">如果目标是完成这次笔试</span>
+            <h3>AI 模拟上岗更合适</h3>
+            <p>它能展示 AI 角色、动态情境、工作流和行为反馈设计。</p>
+            <ul><li>不是普通问答助手，产品辨识度更高</li><li>门店值班场景具体，能够解释如何落地</li><li>问题是商业需求仍需通过企业试点验证</li></ul>
+          </article>
+          <div class="choice-result"><strong>本次选择</strong><p>牺牲一部分商业确定性，换取更高的笔试辨识度；再通过锁定“连锁零售管培生第一次独立值班”控制落地风险。</p></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">04 / 受众收窄</span></div>
+          <div><h2>“受众变窄”不是退步，而是区分首发场景与长期市场。</h2></div>
+        </div>
+        <div class="decision-grid">
+          <article class="decision-card">
+            <small>不成立的写法</small>
+            <h3>面向所有职场人的 AI 训练平台</h3>
+            <p>看起来市场很大，但产品经理、项目经理、新任管理者、管培生需要训练的任务完全不同，采购方也不同。</p>
+            <ul><li>客户边界模糊</li><li>首个场景无法确定</li><li>训练标准无法共用</li></ul>
+          </article>
+          <article class="decision-card dark">
+            <small>最终采用的写法</small>
+            <h3>先服务连锁零售门店管培生</h3>
+            <p>这是产品进入市场的第一扇门，而不是对长期市场规模的最终定义。底层能力未来仍可扩展到其他新人岗位。</p>
+            <ul><li>采购方：企业人才发展与培训部门</li><li>使用时点：课程结束后、独立值班前</li><li>首发任务：一次复合型门店突发事件</li></ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">05 / 数据冷启动</span></div>
+          <div><h2>没有企业数据，能启动原型；没有企业参与，不能正式交付。</h2><p class="subcopy">这是整个方案最重要的诚实边界。</p></div>
+        </div>
+        <div class="data-path">
+          <article class="data-step"><span>PHASE 01</span><h3>通用原型</h3><p>访谈有经验的店长或培训人员，以虚构门店、虚构顾客和人工编写案例搭建一次班次。</p><strong>目的：验证体验，不用于正式考核。</strong></article>
+          <article class="data-step"><span>PHASE 02</span><h3>首客试点</h3><p>客户只需提供岗位职责、关键处理流程、现有评分标准和 3—5 个脱敏案例。</p><strong>目的：校准场景，让培训负责人审核。</strong></article>
+          <article class="data-step"><span>PHASE 03</span><h3>规模扩展</h3><p>试点有效后再连接学习平台，同步学员、任务和训练结果，并沉淀更多岗位模板。</p><strong>目的：验证价值后再增加集成成本。</strong></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">06 / 最终产品</span></div>
+          <div><h2>最后留下的，不是宏大平台，而是一个可信的最小闭环。</h2></div>
+        </div>
+        <div class="blueprint">
+          <div class="blueprint-top"><h3>店长预演舱</h3><p>使用 Dify 搭建多角色情景工作流，让新人完成一次约 20 分钟的虚拟门店班次。</p></div>
+          <div class="blueprint-grid">
+            <article class="blueprint-item"><small>CUSTOMER</small><b>连锁零售培训部门</b><p>每年批量培养门店管培生和储备店长。</p></article>
+            <article class="blueprint-item"><small>SCENE</small><b>第一次独立值班前</b><p>员工请假、商品缺货、顾客投诉同时发生。</p></article>
+            <article class="blueprint-item"><small>AI ROLE</small><b>三类动态角色</b><p>区域经理、门店员工和投诉顾客根据学员行动回应。</p></article>
+            <article class="blueprint-item"><small>OUTPUT</small><b>可观察行为复盘</b><p>检查信息确认、风险判断、人员安排、沟通和跟进。</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="head">
+          <div><span class="kicker">07 / 产品判断复盘</span></div>
+          <div><h2>这次选型真正留下的六条原则。</h2></div>
+        </div>
+        <div class="lessons">
+          <article class="lesson"><span class="lesson-no">01</span><div><h3>有价值，不等于有使用触发</h3><p>老年防骗方向的问题真实，但如果产品无法进入付款前的关键瞬间，价值难以发生。</p></div></article>
+          <article class="lesson"><span class="lesson-no">02</span><div><h3>有亮点，不等于有素材基础</h3><p>家庭共建记忆很特别，但不能假设家庭天然拥有大量共同照片和共同叙事。</p></div></article>
+          <article class="lesson"><span class="lesson-no">03</span><div><h3>会尝试，不等于会持续付费</h3><p>新消费内容产品容易获得第一次点击，却可能败在生成成本、复购和留存。</p></div></article>
+          <article class="lesson"><span class="lesson-no">04</span><div><h3>需求真实，不等于适合作答</h3><p>智能客服商业基础更强，但同质化也更明显；笔试还需要展示产品选择和设计能力。</p></div></article>
+          <article class="lesson"><span class="lesson-no">05</span><div><h3>客户具体，不等于市场永远很窄</h3><p>首发客户是验证入口；先把一个岗位做深，再讨论是否能复制到底层相似的岗位。</p></div></article>
+          <article class="lesson"><span class="lesson-no">06</span><div><h3>原型可启动，不等于产品已验证</h3><p>虚构案例只能证明体验能否运行；企业是否购买、训练是否有效，仍需首客试点回答。</p></div></article>
+        </div>
+      </section>
+
+      <aside class="closing">
+        <h2>最终选择不是“最完美的项目”，而是当前阶段最清楚地交代了：为谁、在何时、解决什么，以及第一步如何开始。</h2>
+        <p>结论仍然保留验证空间：它适合作为一套有辨识度、可落地的笔试方案；若进入真实商业化，还需要企业培训负责人访谈、首个联合试点和效果指标验证。</p>
+      </aside>
+    </main>
+
+    <footer><span>AI 产品选型思考复盘</span><span>FROM NOVELTY TO VALIDITY</span></footer>
+  </div>
+</body>
+</html>
