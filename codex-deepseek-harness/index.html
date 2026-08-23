@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="基于 2026-08-22 当前源码快照，对 OpenAI Codex 与 DeepSeek Harness 进行证据化架构拆解与选型比较。">
+  <title>Codex vs DeepSeek Harness｜证据化架构拆解</title>
+  <style>
+    :root {
+      --paper:#f6f7f2; --ink:#17201d; --muted:#60706a; --line:#d8ded9; --card:#ffffff;
+      --codex:#185b4a; --codex-soft:#e5f0ec; --dsh:#6752cc; --dsh-soft:#ece9fb;
+      --confirm:#147d61; --infer:#9a6810; --suggest:#7357d8; --unknown:#6f7774;
+      --danger:#a43c3c; --shadow:0 16px 44px rgba(23,32,29,.07); --radius:18px;
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;color:var(--ink);background:var(--paper);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.65}
+    a{color:inherit;text-decoration-thickness:1px;text-underline-offset:3px} a:hover{color:var(--codex)}
+    .shell{width:min(1220px,calc(100% - 40px));margin:auto}.topbar{position:sticky;top:0;z-index:20;background:rgba(246,247,242,.9);backdrop-filter:blur(14px);border-bottom:1px solid rgba(216,222,217,.85)}
+    .topbar .shell{display:flex;align-items:center;gap:16px;min-height:62px}.brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap}.brand i{display:inline-block;width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,var(--codex),var(--dsh));margin-right:8px}
+    nav{display:flex;gap:18px;overflow:auto;white-space:nowrap;font-size:13px;color:var(--muted);scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+    .hero{padding:72px 0 38px}.eyebrow{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}.eyebrow:before{content:"";width:36px;height:2px;background:linear-gradient(90deg,var(--codex),var(--dsh))}
+    h1{max-width:1020px;margin:18px 0 24px;font-size:clamp(42px,7vw,88px);line-height:.98;letter-spacing:-.065em;font-weight:850}.gradient{background:linear-gradient(100deg,var(--codex),var(--dsh));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lede{max-width:930px;font-size:clamp(18px,2.2vw,27px);line-height:1.45;letter-spacing:-.02em}.snapshot{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.64);font-size:12px;color:var(--muted)}
+    .verdict{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:12px;margin:34px 0 70px}.verdict>div{padding:24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow)}.verdict .lead{background:#15201c;color:#f5f8f5;border-color:#15201c}.verdict h3{margin:0 0 9px;font-size:14px}.verdict p{margin:0;font-size:15px}.verdict .lead p{font-size:19px;line-height:1.5}.codex-accent{border-top:4px solid var(--codex)!important}.dsh-accent{border-top:4px solid var(--dsh)!important}
+    section{scroll-margin-top:78px;margin:0 0 76px}.section-head{display:grid;grid-template-columns:170px 1fr;gap:24px;align-items:start;margin-bottom:24px}.kicker{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.1em;text-transform:uppercase}.section-head h2{margin:0;font-size:clamp(30px,4vw,52px);line-height:1.08;letter-spacing:-.045em}.section-head p{max-width:780px;margin:13px 0 0;color:var(--muted)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 8px 22px rgba(23,32,29,.035)}.card h3{margin:0 0 10px;font-size:20px;letter-spacing:-.025em}.card h4{margin:18px 0 7px}.card p{margin:6px 0}.small{font-size:13px;color:var(--muted)}
+    .label{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;vertical-align:1px}.confirmed{color:var(--confirm);background:#e1f3ed}.inferred{color:var(--infer);background:#fff0d3}.suggested{color:var(--suggest);background:#eee9ff}.unknown{color:var(--unknown);background:#ecefed}
+    .dna{position:relative;overflow:hidden}.dna:after{content:"";position:absolute;right:-40px;bottom:-55px;width:160px;height:160px;border-radius:50%;background:var(--codex-soft);opacity:.7}.dna.dsh:after{background:var(--dsh-soft)}.dna>*{position:relative;z-index:1}.bigword{font-size:34px;font-weight:850;letter-spacing:-.045em}.codex .bigword{color:var(--codex)}.dsh .bigword{color:var(--dsh)}
+    .architecture{padding:20px;background:#141d1a;color:#ecf2ee;border-radius:24px;box-shadow:var(--shadow)}.arch-head{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px}.arch-head h3{margin:0;font-size:22px}.arch-head span{font-size:12px;color:#aebbb5}.layers{display:grid;gap:8px}.layer{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:stretch}.layer-title{display:flex;align-items:center;padding:10px 12px;border-radius:11px;background:#25312d;color:#bac7c1;font-size:12px;font-weight:750}.layer-body{display:flex;gap:7px;flex-wrap:wrap;padding:9px;border:1px solid #34413c;border-radius:11px;background:#1b2522}.block{padding:6px 10px;border-radius:7px;background:#2c3a35;font-size:12px}.architecture.codex-arch .block.focus{background:var(--codex);color:white}.architecture.dsh-arch .block.focus{background:var(--dsh);color:white}
+    .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;counter-reset:flow}.step{position:relative;min-height:132px;padding:15px 13px;border:1px solid var(--line);border-radius:14px;background:var(--card)}.step:before{counter-increment:flow;content:counter(flow,decimal-leading-zero);display:block;margin-bottom:17px;font-size:12px;font-weight:900;color:var(--muted)}.step:after{content:"→";position:absolute;right:-9px;top:54px;z-index:2;width:18px;height:18px;display:grid;place-items:center;background:var(--paper);font-size:15px}.step:last-child:after{display:none}.step strong{display:block;font-size:14px}.step p{margin:5px 0 0;font-size:12px;color:var(--muted);line-height:1.5}.flow.deep{counter-reset:deep}.flow.deep .step:before{counter-increment:deep;content:counter(deep,decimal-leading-zero);color:var(--dsh)}.flow.cod .step:before{color:var(--codex)}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;font-size:13px}th,td{padding:13px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{background:#edf0ed;font-size:12px;letter-spacing:.02em}tr:last-child td{border-bottom:0}td:first-child{font-weight:750;width:15%}.score{white-space:nowrap;font-variant-numeric:tabular-nums}.meter{display:inline-block;width:44px;height:5px;margin:0 7px;background:#e3e7e4;border-radius:8px;vertical-align:2px;overflow:hidden}.meter i{display:block;height:100%;background:var(--codex)}.dsh-meter i{background:var(--dsh)}
+    .callout{padding:20px 22px;border-left:4px solid var(--infer);background:#fffaf0;border-radius:0 14px 14px 0}.callout h3{margin:0 0 6px}.callout p{margin:0}.callout.design{border-color:var(--suggest);background:#f7f4ff}.callout.risk{border-color:var(--danger);background:#fff3f3}
+    .matrix td:nth-child(2){background:rgba(24,91,74,.035)}.matrix td:nth-child(3){background:rgba(103,82,204,.035)}.winner{font-weight:800}.codex-text{color:var(--codex)}.dsh-text{color:var(--dsh)}
+    .hybrid{position:relative;padding:30px;border-radius:24px;background:linear-gradient(140deg,#13201b,#241d48);color:white;overflow:hidden}.hybrid:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 10%,rgba(130,109,255,.25),transparent 35%),radial-gradient(circle at 10% 90%,rgba(45,171,133,.2),transparent 35%)}.hybrid>*{position:relative}.hybrid-grid{display:grid;grid-template-columns:1fr 54px 1fr;gap:14px;align-items:center}.hybrid-side{display:grid;gap:8px}.hybrid-box{padding:13px 15px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);border-radius:12px}.hybrid-arrow{text-align:center;font-size:30px}.hybrid h3{margin-top:0;font-size:27px}.hybrid .label{background:rgba(255,255,255,.13);color:#fff}
+    .decision{display:grid;grid-template-columns:1fr 1fr;gap:14px}.decision .card{padding:0;overflow:hidden}.decision header{padding:18px 22px;color:white}.decision .codex-choice header{background:var(--codex)}.decision .dsh-choice header{background:var(--dsh)}.decision header h3{margin:0}.decision .body{padding:20px 22px}.decision ul,.card ul{padding-left:20px;margin:8px 0}.decision li,.card li{margin:7px 0}
+    .ledger{font-size:12px}.ledger td:first-child{width:7%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.ledger td:nth-child(2){width:11%}.ledger a{word-break:break-word}.source-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800}.sources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.source{padding:14px 16px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:13px}.source strong{display:block;margin-bottom:2px}.source span{color:var(--muted)}
+    figure.diagram{margin:0 0 16px;padding:0;border:1px solid var(--line);border-radius:22px;background:var(--card);overflow:hidden;box-shadow:var(--shadow)}.fig-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line);background:#f0f2ef}.fig-head h3{margin:2px 0 0;font-size:21px;letter-spacing:-.025em}.fig-no{font:850 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);letter-spacing:.08em}.fig-body{padding:22px}.fig-note{padding:11px 22px;border-top:1px solid var(--line);background:#fafbf9;color:var(--muted);font-size:12px}.fig-note strong{color:var(--ink)}
+    .visual-scroll{overflow-x:auto;padding-bottom:4px}.journey-map{display:grid;grid-template-columns:118px repeat(6,minmax(150px,1fr));min-width:1040px;border-top:1px solid var(--line);border-left:1px solid var(--line)}.jm{min-height:105px;padding:12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;position:relative}.jm.head{min-height:auto;background:#17201d;color:white;font-weight:800}.jm.lane{background:#edf0ed;font-weight:800}.jm.codex-cell{background:rgba(24,91,74,.035)}.jm.dsh-cell{background:rgba(103,82,204,.035)}.jm strong{display:block;margin-bottom:5px;font-size:13px}.jm em{display:inline-block;margin-top:7px;font-style:normal;color:var(--muted)}
+    .value-chain{display:grid;grid-template-columns:1fr 48px 1fr 48px 1fr;align-items:stretch;gap:8px}.vc-node{padding:19px;border:1px solid var(--line);border-radius:14px;background:white}.vc-node strong{display:block;font-size:16px;margin-bottom:6px}.vc-arrow{display:grid;place-items:center;color:var(--muted);font-size:23px}.vc-node.codex-node{border-top:4px solid var(--codex)}.vc-node.dsh-node{border-top:4px solid var(--dsh)}
+    .capability-map{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.cap-domain{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fbfcfa}.cap-domain h4{margin:0 0 10px;font-size:14px}.cap-domain ul{margin:0;padding-left:17px;font-size:12px;color:var(--muted)}.cap-domain li{margin:5px 0}.cap-core{grid-column:1/-1;display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:center;background:#17201d;color:white}.cap-core ul{color:#ccd6d1;display:flex;flex-wrap:wrap;gap:7px;list-style:none;padding:0}.cap-core li{padding:6px 9px;border:1px solid #3c4a44;border-radius:8px;margin:0}
+    .seq-canvas{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;position:relative}.seq-actor{text-align:center;padding:10px 7px;border-radius:10px;background:#222d29;color:white;font-size:12px;font-weight:800}.seq-track{position:relative;min-height:380px;border-left:1px dashed #aeb8b3;margin-left:50%}.seq-event{position:absolute;width:calc(200% + 9px);min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:white;font-size:11px;line-height:1.35;box-shadow:0 4px 12px rgba(23,32,29,.05)}.seq-event.right{left:0}.seq-event.left{right:0;transform:translateX(-9px)}.seq-event.codex-event{border-left:4px solid var(--codex)}.seq-event.dsh-event{border-left:4px solid var(--dsh)}.seq-event:after{content:"→";position:absolute;right:-15px;top:11px;color:var(--muted)}.seq-event.left:after{content:"←";right:auto;left:-15px}
+    .dual-diagram{display:grid;grid-template-columns:1fr 1fr;gap:14px}.diagram-side{padding:18px;border:1px solid var(--line);border-radius:16px;background:#fbfcfa}.diagram-side h4{margin:0 0 14px;font-size:17px}.stack{display:grid;gap:7px}.stack-node{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:white;font-size:12px;position:relative}.stack-node+.stack-node:before{content:"↓";position:absolute;top:-17px;left:50%;color:var(--muted);z-index:2}.stack-node.codex-node{border-left:4px solid var(--codex)}.stack-node.dsh-node{border-left:4px solid var(--dsh)}.stack-node .meta{float:right;color:var(--muted);font-size:10px}
+    .context-layout{display:grid;grid-template-columns:1fr 84px 1fr;gap:12px;align-items:center}.context-source,.context-sink{display:grid;gap:8px}.context-hub{display:grid;place-items:center;width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--codex),var(--dsh));color:white;text-align:center;font-size:11px;font-weight:850;box-shadow:0 9px 25px rgba(50,50,80,.18)}.context-item{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:12px}.context-item:after{content:" →";color:var(--muted)}.context-sink .context-item:after{content:""}.context-sink .context-item:before{content:"→ ";color:var(--muted)}
+    .security-pipe{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:7px;align-items:center}.security-node{min-height:84px;padding:11px 9px;border:1px solid var(--line);border-radius:11px;background:white;font-size:11px}.security-node strong{display:block;margin-bottom:5px;font-size:12px}.security-arrow{text-align:center;color:var(--muted);font-size:20px}.warning-band{margin-top:12px;padding:11px 13px;border-radius:10px;background:#fff0e6;color:#79451d;font-size:12px}
+    .agent-forest{display:grid;grid-template-columns:1fr 1fr;gap:22px}.agent-tree{text-align:center;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fbfcfa}.root-node{display:inline-block;padding:11px 18px;border-radius:11px;color:white;background:var(--codex);font-weight:800;font-size:13px}.agent-tree.dsh-tree .root-node{background:var(--dsh)}.tree-branch{width:2px;height:23px;background:var(--line);margin:auto}.children{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative}.children:before{content:"";position:absolute;left:16%;right:16%;top:-12px;border-top:2px solid var(--line)}.child-node{padding:10px 7px;border:1px solid var(--line);border-radius:10px;background:white;font-size:11px}.tree-tools{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:13px}.tree-tools span{padding:4px 7px;border-radius:999px;background:#edf0ed;font-size:10px}
+    .entity-canvas{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.entity{padding:12px;border:1px solid var(--line);border-radius:11px;background:#fff;min-height:78px;font-size:11px}.entity strong{display:block;font-size:13px}.entity.core{background:#17201d;color:white;border-color:#17201d}.entity.codex-entity{border-top:4px solid var(--codex)}.entity.dsh-entity{border-top:4px solid var(--dsh)}.relation-row{text-align:center;margin:11px 0;color:var(--muted);font-size:12px;letter-spacing:.02em}
+    .state-machine{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:center}.state{padding:10px 7px;border:1px solid var(--line);border-radius:999px;background:white;text-align:center;font-size:11px;font-weight:750}.state.active{color:white;background:var(--codex);border-color:var(--codex)}.state.dsh-active{background:var(--dsh);border-color:var(--dsh)}.state-arrow{text-align:center;color:var(--muted)}
+    .risk-map{display:grid;grid-template-columns:70px 1fr 1fr;grid-template-rows:1fr 1fr 45px;min-height:420px}.risk-axis-y{grid-row:1/3;display:grid;place-items:center;writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:var(--muted)}.quadrant{position:relative;padding:18px;border:1px solid var(--line);min-height:175px}.quadrant strong{display:block;margin-bottom:6px}.q1{background:#edf7f3}.q2{background:#f2efff}.q3,.q4{background:#fafbf9}.risk-axis-x{grid-column:2/4;text-align:center;padding-top:12px;color:var(--muted);font-size:11px}.plot-dot{position:absolute;padding:7px 10px;border-radius:999px;color:white;font-size:11px;font-weight:800;box-shadow:0 6px 15px rgba(0,0,0,.14)}.plot-dot.codex-dot{background:var(--codex);right:14%;top:26%}.plot-dot.dsh-dot{background:var(--dsh);left:13%;top:32%}
+    footer{margin-top:80px;padding:40px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.footer-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+    @media(max-width:900px){.verdict{grid-template-columns:1fr 1fr}.verdict .lead{grid-column:1/-1}.section-head{grid-template-columns:1fr;gap:6px}.grid3{grid-template-columns:1fr}.flow{grid-template-columns:repeat(3,1fr)}.flow .step:nth-child(3):after{display:none}.hybrid-grid{grid-template-columns:1fr}.hybrid-arrow{transform:rotate(90deg)}.sources{grid-template-columns:1fr}.capability-map{grid-template-columns:1fr 1fr}.cap-core{grid-column:1/-1}.agent-forest,.dual-diagram{grid-template-columns:1fr}.entity-canvas{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:680px){.shell{width:min(100% - 24px,1220px)}.hero{padding-top:45px}h1{font-size:45px}.verdict,.grid2,.decision{grid-template-columns:1fr}.verdict .lead{grid-column:auto}.flow{grid-template-columns:1fr}.step{min-height:auto}.step:after,.flow .step:nth-child(3):after{content:"↓";display:grid;right:calc(50% - 9px);top:auto;bottom:-14px}.flow .step:last-child:after{display:none}.layer{grid-template-columns:1fr}.layer-title{padding:7px 10px}.table-wrap{overflow-x:auto;margin-right:-12px;padding-right:12px}table{min-width:760px}.topbar .brand{display:none}.topbar .shell{justify-content:center}.architecture{padding:14px}.hybrid{padding:22px}.section-head h2{font-size:35px}.fig-body{padding:14px}.fig-head{padding:15px}.value-chain{grid-template-columns:1fr}.vc-arrow{transform:rotate(90deg)}.capability-map{grid-template-columns:1fr}.cap-core{display:block}.cap-core ul{margin-top:12px}.context-layout{grid-template-columns:1fr}.context-hub{margin:auto}.security-pipe{grid-template-columns:1fr}.security-arrow{transform:rotate(90deg)}.children{grid-template-columns:1fr}.children:before{display:none}.entity-canvas{grid-template-columns:1fr 1fr}.state-machine{grid-template-columns:1fr}.state-arrow{transform:rotate(90deg)}.risk-map{min-width:650px}.seq-canvas{min-width:860px}.seq-track{min-height:400px}.visual-scroll:before{content:"← 横向滑动查看完整视图 →";display:block;position:sticky;left:0;width:max-content;margin:0 0 8px;padding:4px 8px;border-radius:999px;background:#17201d;color:white;font-size:10px;z-index:3}}
+    @media print{.topbar{display:none}body{background:white}.card,.architecture,.hybrid{break-inside:avoid;box-shadow:none}section{margin-bottom:42px}.hero{padding-top:30px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell">
+      <div class="brand"><i></i>Harness / 2026</div>
+      <nav aria-label="报告导航">
+        <a href="#verdict">结论</a><a href="#scope">边界</a><a href="#product">用户价值</a><a href="#journey">旅程</a><a href="#capabilities">能力域</a><a href="#architectures">架构</a><a href="#sequences">时序</a><a href="#context">上下文</a><a href="#safety">安全</a><a href="#multiagent">多Agent</a><a href="#decision">选型</a><a href="#tobe">To‑Be</a><a href="#evidence">证据</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <header class="hero">
+      <div class="eyebrow">Evidence-based architecture teardown</div>
+      <h1>Codex 与 DeepSeek<br><span class="gradient">Harness 的分岔</span></h1>
+      <p class="lede">它们解决的是同一类问题：让模型在长任务里调用工具、管理上下文、执行代码并可被产品界面控制。但两者的第一性目标不同——一个优先把编程 Agent 做成稳定产品内核，另一个优先把 Agent Runtime 做成可替换的插件框架。</p>
+      <div class="snapshot">
+        <span class="chip">研究日期 2026‑08‑22</span>
+        <span class="chip">Codex commit 51ebf5b</span>
+        <span class="chip">DeepSeek Harness commit b150a55</span>
+        <span class="chip">仅采用官方仓库 / 官方文章</span>
+        <span class="chip">源码级静态拆解，未做性能压测</span>
+        <span class="chip">完整视图：14 张关系图 / 28 条证据</span>
+      </div>
+    </header>
+
+    <section id="verdict">
+      <div class="verdict">
+        <div class="lead">
+          <h3><span class="label inferred">【合理推断】</span> 一句话结论</h3>
+          <p><strong>Codex 是“产品化 Harness”</strong>：固定 Rust Core、Responses API 中心、App Server 稳定外壳；<strong>DeepSeek Harness 是“框架化 Harness”</strong>：Cordis 插件树、事件溯源会话、能力接缝可替换。不是谁绝对更先进，而是谁更贴近你的系统目标。</p>
+        </div>
+        <div class="codex-accent">
+          <h3 class="codex-text">选 Codex，如果你要</h3>
+          <p>尽快落地可靠的 Coding Agent 产品，并让 CLI、IDE、桌面端共享一致的 Thread / Turn / Item、审批与沙箱语义。</p>
+        </div>
+        <div class="dsh-accent">
+          <h3 class="dsh-text">选 DeepSeek Harness，如果你要</h3>
+          <p>搭建 Agent 平台或研究 Runtime，需要替换模型适配器、工具、日志、文件系统、子进程、执行环境甚至 Agent Loop。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="scope">
+      <div class="section-head"><div class="kicker">01 / Scope</div><div><h2>先把比较边界钉死</h2><p>本报告拆的是 <strong>Harness / Agent Runtime</strong>，不是 GPT 与 DeepSeek 模型能力对比，也不把公开接口无法证明的内部实现当事实。</p></div></div>
+      <div class="grid3">
+        <article class="card"><h3>比较对象</h3><p><span class="label confirmed">【已确认】</span> Codex 开源仓库中的 <code>codex-rs/core</code>、App Server、工具路由、rollout、模型 Provider 与多 Agent 控制。</p><p><span class="label confirmed">【已确认】</span> DeepSeek Harness 的 Cordis 容器、agent-loop、session、tools、sandbox、subagent、API gateway 与官方 profiles。</p></article>
+        <article class="card"><h3>不比较什么</h3><p><span class="label unknown">【未知】</span> 两者在同一模型、同一任务、同一硬件上的完成率、吞吐、Token 成本和端到端延迟；当前没有执行公平压测。</p><p><span class="label unknown">【未知】</span> 闭源线上服务是否还有未公开的调度、安全或记忆层。</p></article>
+        <article class="card"><h3>证据等级</h3><p><span class="label confirmed">【已确认】</span> 直接来自源码、仓库文档或官方文章。</p><p><span class="label inferred">【合理推断】</span> 由多个已确认结构归纳出的设计取向。</p><p><span class="label suggested">【建议设计】</span> 本报告提出的 To‑Be。</p></article>
+      </div>
+      <div class="callout design" style="margin-top:14px"><h3>本次启用的三个品类扩展</h3><p><span class="label confirmed">【已确认】</span> <strong>助手 / Copilot：</strong>上下文、建议与执行边界、确认门、中断和恢复；<strong>编程 / 开发者 AI：</strong>仓库、补丁、命令、测试、权限与供应链风险；<strong>Agent 平台 / 自动化：</strong>Loop、工具调度、状态机、幂等、补偿、可观测与多 Agent。未启用 AIGC、医疗、客服或推荐系统专用框架。</p></div>
+    </section>
+
+    <section id="dna">
+      <div class="section-head"><div class="kicker">02 / Design DNA</div><div><h2>同一道题，两种架构基因</h2><p>最关键的差异并不在“都有工具调用”，而在什么被固定、什么被开放，以及系统真相存放在哪里。</p></div></div>
+      <div class="grid2">
+        <article class="card dna codex"><span class="label confirmed">【已确认】</span><div class="bigword">Core first</div><h3>Codex：固定内核，稳定外协议</h3><p>公开说明把 Codex Core 定义为每条线程的 library + runtime，App Server 再把它暴露成双向 JSON‑RPC。模型请求以 Responses API 语义为中心，Thread / Turn / Item 是产品状态主轴。</p><ul><li>重点：产品一致性、生命周期、审批、沙箱、事件推送</li><li>外部扩展：工具、MCP、Skills、配置、客户端、模型 Provider</li><li>系统真相：会话历史 + rollout 持久化 + ThreadManager 活跃状态</li></ul><p class="small">证据 E01–E08</p></article>
+        <article class="card dna dsh"><span class="label confirmed">【已确认】</span><div class="bigword">Plugin first</div><h3>DeepSeek：一切插件，事件为轴</h3><p>官方架构明确声明 Cordis 容器、模型适配器、工具注册表、会话日志、Agent Loop 都可替换；profile / bundle 只是可装载的一组默认选择，而非特权核心。</p><ul><li>重点：可替换性、组合性、运行时接缝、事件可重放</li><li>外部扩展：Provider、Tool、Session、FS、Subprocess、Subagent、Loop</li><li>系统真相：append‑only Session Event Log</li></ul><p class="small">证据 E09–E15</p></article>
+      </div>
+    </section>
+
+    <section id="product">
+      <div class="section-head"><div class="kicker">03 / Product</div><div><h2>先看它们分别服务谁</h2><p>同样叫 Harness，Codex 把价值交付到“完成一个编码任务”，DeepSeek Harness 把价值交付到“组合出一个可控 Runtime”。这是后续所有技术差异的来源。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 01</span><h3>用户—任务—价值链</h3></div><span class="label inferred">【合理推断】</span></div>
+        <div class="fig-body">
+          <div class="grid2">
+            <div>
+              <h3 class="codex-text">Codex：把意图变成可验证的代码改动</h3>
+              <div class="value-chain"><div class="vc-node codex-node"><strong>开发者</strong>提出仓库级任务、补丁或排错目标</div><div class="vc-arrow">→</div><div class="vc-node codex-node"><strong>Coding Agent</strong>读取上下文、调用工具、修改并测试</div><div class="vc-arrow">→</div><div class="vc-node codex-node"><strong>可验证结果</strong>回复、文件改动、命令结果与审批记录</div></div>
+            </div>
+            <div>
+              <h3 class="dsh-text">DeepSeek Harness：把能力组件变成可替换 Runtime</h3>
+              <div class="value-chain"><div class="vc-node dsh-node"><strong>平台 / 框架开发者</strong>选择 profile、provider 与插件组合</div><div class="vc-arrow">→</div><div class="vc-node dsh-node"><strong>Agent Runtime</strong>事件日志驱动，能力经 seam 装载</div><div class="vc-arrow">→</div><div class="vc-node dsh-node"><strong>可组合运行时</strong>可替换模型、工具、FS、Loop 与子 Agent</div></div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="fig-note"><strong>价值边界：</strong>Codex 的最终成功应落到代码/命令/任务结果，而不只是模型回答；DeepSeek Harness 的最终成功还包括组件契约、事件可重建与运行期可替换性。依据 E01、E09、E19。</figcaption>
+      </figure>
+      <div class="grid3">
+        <article class="card"><h3>原替代方案</h3><p>Codex 用户原本手动读仓库、编辑、跑命令和串联工具；DeepSeek 用户原本维护自研 loop、provider SDK、工具协议与持久化层。</p></article>
+        <article class="card"><h3>AI 的角色</h3><p><span class="label inferred">【合理推断】</span> 两者都覆盖理解、规划、生成与执行，但 Codex 把“产品任务推进”作为主轴，DeepSeek 把“运行时编排”作为主轴。</p></article>
+        <article class="card"><h3>失败代价</h3><p>前者主要是错误修改、越权执行或任务未完成；后者还包含插件组合不兼容、事件投影错误与自定义后端行为漂移。</p></article>
+      </div>
+    </section>
+
+    <section id="journey">
+      <div class="section-head"><div class="kicker">04 / Journey</div><div><h2>端到端用户旅程不是同一条</h2><p>下图同时分开“用户看到什么”和“系统真正完成什么”，并保留权限拒绝、工具失败、上下文压缩和中断恢复分支。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 02</span><h3>双产品六阶段旅程泳道</h3></div><span class="label inferred">【合理推断】</span></div>
+        <div class="fig-body visual-scroll">
+          <div class="journey-map">
+            <div class="jm head">产品 / 阶段</div><div class="jm head">1. 进入与配置</div><div class="jm head">2. 提交任务</div><div class="jm head">3. 理解与采样</div><div class="jm head">4. 工具与审批</div><div class="jm head">5. 验证与继续</div><div class="jm head">6. 完成 / 恢复</div>
+            <div class="jm lane">Codex 用户</div><div class="jm codex-cell"><strong>选工作目录/线程</strong>客户端连接 App Server</div><div class="jm codex-cell"><strong>输入自然语言目标</strong>可附图像、音频、schema</div><div class="jm codex-cell"><strong>查看流式 Item</strong>模型说明、工具调用、进度</div><div class="jm codex-cell"><strong>允许或拒绝</strong>user / auto_review 审批</div><div class="jm codex-cell"><strong>检查 diff / tests</strong>追问、steer 或补充输入</div><div class="jm codex-cell"><strong>接受结果</strong>或中断、恢复 Thread</div>
+            <div class="jm lane">Codex 系统</div><div class="jm codex-cell"><strong>ThreadManager 建线程</strong>Session 最多一个运行任务</div><div class="jm codex-cell"><strong>创建 Turn</strong>组装历史、instructions、工具</div><div class="jm codex-cell"><strong>Responses 流</strong>assistant / tool call 事件</div><div class="jm codex-cell"><strong>ToolRouter 分发</strong>permission profile + sandbox</div><div class="jm codex-cell"><strong>结果回灌再采样</strong>end_turn=false 继续循环</div><div class="jm codex-cell"><strong>持久化 rollout</strong>必要时 compact</div>
+            <div class="jm lane">DeepSeek 用户</div><div class="jm dsh-cell"><strong>选择 profile / bundle</strong>加载 provider 与 patch</div><div class="jm dsh-cell"><strong>创建 Session</strong>发送 prompt / followup</div><div class="jm dsh-cell"><strong>观察事件流</strong>turn / step / message</div><div class="jm dsh-cell"><strong>按 preset 审批</strong>或配置自定义工具策略</div><div class="jm dsh-cell"><strong>检查日志与投影</strong>替换插件、重放或续跑</div><div class="jm dsh-cell"><strong>结束 / fork</strong>恢复中断事件或持久化</div>
+            <div class="jm lane">DeepSeek 系统</div><div class="jm dsh-cell"><strong>Cordis 装载插件树</strong>service / waterfall 生效</div><div class="jm dsh-cell"><strong>Inbox 领取输入</strong>追加 durable turn 事件</div><div class="jm dsh-cell"><strong>deriveMessages</strong>准备 adapter 请求</div><div class="jm dsh-cell"><strong>bounded tool pool</strong>exclusive barrier / 顺序提交</div><div class="jm dsh-cell"><strong>事件日志回写</strong>下一 Step 从日志重建</div><div class="jm dsh-cell"><strong>stop / compact / recover</strong>失败闭合事件边界</div>
+          </div>
+        </div>
+        <figcaption class="fig-note"><strong>关键分支：</strong>用户拒绝权限则工具不执行；工具失败并不等于整个用户目标失败；Agent 自述完成也不等于代码、文件或外部状态已经完成。依据 E02–E05、E10–E15、E19。</figcaption>
+      </figure>
+    </section>
+
+    <section id="capabilities">
+      <div class="section-head"><div class="kicker">05 / Capabilities</div><div><h2>功能域与 AI 能力地图</h2><p>这里启用三个品类扩展：助手/Copilot、编程/开发者 AI、Agent 平台/自动化。没有证据支持的内建 RAG、长期记忆和动态模型路由继续保持未知。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 03</span><h3>能力域地图：共性底座与分化能力</h3></div><span class="label confirmed">【已确认】</span></div>
+        <div class="fig-body">
+          <div class="capability-map">
+            <div class="cap-domain cap-core"><h4>两者共同底座</h4><ul><li>多轮 Agent Loop</li><li>模型流式事件</li><li>工具注册与执行</li><li>上下文组装</li><li>会话持久化</li><li>压缩与中断</li><li>权限 / 沙箱</li><li>子 Agent</li></ul></div>
+            <div class="cap-domain"><h4 class="codex-text">Codex · 产品交互域</h4><ul><li>App Server + 多客户端</li><li>Thread / Turn / Item</li><li>流式通知与审批卡</li><li>Thread 恢复与 fork</li></ul></div>
+            <div class="cap-domain"><h4 class="codex-text">Codex · 编程执行域</h4><ul><li>仓库/文件上下文</li><li>命令、补丁和工具调用</li><li>workspace / network 权限</li><li>共享工作区多 Agent</li></ul></div>
+            <div class="cap-domain"><h4 class="dsh-text">DeepSeek · Runtime 组合域</h4><ul><li>Cordis plugin lifecycle</li><li>profile / bundle / patch</li><li>capability seam</li><li>waterfall 改写与拦截</li></ul></div>
+            <div class="cap-domain"><h4 class="dsh-text">DeepSeek · 执行世界域</h4><ul><li>抽象 Filesystem / Subprocess</li><li>本地及可替换 Provider</li><li>文件新鲜度 guard</li><li>native / code / both</li></ul></div>
+            <div class="cap-domain"><h4>治理与可观测域</h4><ul><li>审批、取消与中断</li><li>Token / telemetry / events</li><li>持久化与恢复</li><li>错误分类及审计边界</li></ul></div>
+            <div class="cap-domain"><h4>当前证据未覆盖</h4><ul><li><span class="label unknown">【未知】</span> 内建向量 RAG</li><li><span class="label unknown">【未知】</span> 用户级长期记忆产品</li><li><span class="label unknown">【未知】</span> 线上企业计费 / SLA</li></ul></div>
+          </div>
+        </div>
+        <figcaption class="fig-note"><strong>能力边界：</strong>“可通过工具连接知识源”不等于“产品内建完整 RAG”；“能恢复 Session”也不等于“存在用户级长期记忆”。依据 E05、E09、E13–E15、E20。</figcaption>
+      </figure>
+    </section>
+
+    <section id="architectures">
+      <div class="section-head"><div class="kicker">06 / As-Is</div><div><h2>两套公开 As‑Is 架构</h2><p>这是公开源码中可确认的组件关系；没有把“可能存在”的线上服务补进图里。</p></div></div>
+      <figure class="diagram">
+      <div class="fig-head"><div><span class="fig-no">FIGURE 04</span><h3>产品控制面与能力接缝的分层差异</h3></div><span class="label confirmed">【已确认】</span></div>
+      <div class="fig-body"><div class="grid2">
+        <article class="architecture codex-arch">
+          <div class="arch-head"><h3>OpenAI Codex</h3><span>产品控制面向内收敛</span></div>
+          <div class="layers">
+            <div class="layer"><div class="layer-title">交互表面</div><div class="layer-body"><span class="block">CLI</span><span class="block">IDE</span><span class="block">Desktop / Web clients</span><span class="block focus">App Server</span></div></div>
+            <div class="layer"><div class="layer-title">产品协议</div><div class="layer-body"><span class="block focus">JSON‑RPC</span><span class="block focus">Thread</span><span class="block focus">Turn</span><span class="block focus">Item</span><span class="block">Notifications</span></div></div>
+            <div class="layer"><div class="layer-title">运行内核</div><div class="layer-body"><span class="block focus">ThreadManager</span><span class="block focus">Session</span><span class="block focus">run_turn</span><span class="block">Tool futures</span><span class="block">Compaction</span></div></div>
+            <div class="layer"><div class="layer-title">能力层</div><div class="layer-body"><span class="block">ToolRouter</span><span class="block">MCP / Skills</span><span class="block">AgentControl</span><span class="block">Sandbox</span><span class="block">Approvals</span></div></div>
+            <div class="layer"><div class="layer-title">模型 / 状态</div><div class="layer-body"><span class="block focus">Responses API</span><span class="block">ProviderInfo</span><span class="block">History</span><span class="block">Rollout JSONL</span></div></div>
+          </div>
+        </article>
+        <article class="architecture dsh-arch">
+          <div class="arch-head"><h3>DeepSeek Harness</h3><span>能力接缝向外开放</span></div>
+          <div class="layers">
+            <div class="layer"><div class="layer-title">Profiles / 客户端</div><div class="layer-body"><span class="block">CLI</span><span class="block">Web</span><span class="block">Browser</span><span class="block focus">Bundles / Patches</span><span class="block">Typed RPC</span></div></div>
+            <div class="layer"><div class="layer-title">插件容器</div><div class="layer-body"><span class="block focus">Cordis Context</span><span class="block focus">Lifecycle</span><span class="block focus">Waterfalls</span><span class="block">Fork / Effect cleanup</span></div></div>
+            <div class="layer"><div class="layer-title">Agent Runtime</div><div class="layer-body"><span class="block focus">ReactLoopAgent</span><span class="block">Inbox</span><span class="block">Request context</span><span class="block">Tool scheduler</span><span class="block">Compactor</span></div></div>
+            <div class="layer"><div class="layer-title">Capability seams</div><div class="layer-body"><span class="block">Model Adapter</span><span class="block">Tool Registry</span><span class="block">Filesystem</span><span class="block">Subprocess</span><span class="block">Sandbox</span><span class="block">Subagent</span></div></div>
+            <div class="layer"><div class="layer-title">状态 / 持久化</div><div class="layer-body"><span class="block focus">Session Event Log</span><span class="block">Projection</span><span class="block">JSONL</span><span class="block">SQLite</span></div></div>
+          </div>
+        </article>
+      </div></div>
+      <figcaption class="fig-note"><strong>读图方法：</strong>绿色强调 Codex 的稳定产品协议和运行内核；紫色强调 DeepSeek Harness 的插件容器、可替换接缝与事件真相源。依据 E01、E02、E08、E09、E14。</figcaption>
+      </figure>
+      <div class="callout" style="margin-top:14px"><h3><span class="label inferred">【合理推断】</span> 控制权的分配不同</h3><p>Codex 把较多产品语义压进统一内核，因此客户端更薄、行为更一致；DeepSeek 把更多语义暴露为插件接缝，因此平台定制更自由，但集成方也要承担更多组合测试、依赖顺序与兼容性责任。</p></div>
+    </section>
+
+    <section id="sequences">
+      <div class="section-head"><div class="kicker">07 / Agent Loop</div><div><h2>一次任务到底怎样跑</h2><p>两边都不是“模型一次回答完”，而是多 Step 循环：组装上下文 → 模型流式输出 → 识别工具 → 执行 → 回灌 → 继续，直到助手消息结束或被中断。</p></div></div>
+      <figure class="diagram">
+      <div class="fig-head"><div><span class="fig-no">FIGURE 05</span><h3 class="codex-text">Codex：Turn 驱动的闭环</h3></div><span class="label confirmed">【已确认】</span></div>
+      <div class="fig-body"><div class="flow cod">
+        <div class="step"><strong>Thread / Turn</strong><p>App Server 或客户端启动 Turn，Session 维护活动任务与 turn context。</p></div>
+        <div class="step"><strong>构造 Prompt</strong><p>历史、base instructions、工具规范、输出 schema 进入模型请求。</p></div>
+        <div class="step"><strong>Responses 流</strong><p>ModelClientSession 消费响应事件并识别 assistant / tool call。</p></div>
+        <div class="step"><strong>路由工具</strong><p>ToolRouter 解析调用，Registry 分发；可并发保留 in‑flight futures。</p></div>
+        <div class="step"><strong>回写 / 再采样</strong><p>工具结果追加到历史；如 end_turn=false，则继续下一次采样。</p></div>
+        <div class="step"><strong>完成 / 压缩</strong><p>助手最终消息结束 Turn；达到阈值时自动 compaction。</p></div>
+      </div></div><figcaption class="fig-note"><strong>停止条件：</strong>只有最终 assistant message / end_turn 才结束本轮；工具结果会进入历史并触发继续采样，Token 压力可触发自动 compaction。源码入口：<code>session/turn.rs::run_turn</code>、<code>ToolRouter</code>、<code>ModelClientSession</code>。证据 E03–E07、E19。</figcaption></figure>
+      <figure class="diagram"><div class="fig-head"><div><span class="fig-no">FIGURE 06</span><h3 class="dsh-text">DeepSeek：Event 驱动的闭环</h3></div><span class="label confirmed">【已确认】</span></div><div class="fig-body"><div class="flow deep">
+        <div class="step"><strong>Inbox / Turn</strong><p>followup、steer、inject 进入 inbox；preStep 原子领取输入。</p></div>
+        <div class="step"><strong>Log Projection</strong><p>从 Session Event Log 派生 model‑visible messages 与 runtime context。</p></div>
+        <div class="step"><strong>Adapter Stream</strong><p>选 provider / model，经 waterfall 改写后调用统一 ModelAdapter。</p></div>
+        <div class="step"><strong>工具调度</strong><p>bounded rolling pool；exclusive 调用形成 barrier，按模型顺序提交结果。</p></div>
+        <div class="step"><strong>Durable Append</strong><p>assistant、tool、step 事件追加到日志，再由下一 Step 重建请求。</p></div>
+        <div class="step"><strong>Stop / Recover</strong><p>无工具即结束；错误、取消、压缩和恢复都有显式事件边界。</p></div>
+      </div></div><figcaption class="fig-note"><strong>重建不变量：</strong>每次请求都从 Session Event Log 的 model-visible projection 派生；工具事件、Step 边界与错误闭合后再进入下一轮。源码入口：<code>ReactLoopAgent</code>、<code>executeToolCalls</code>、<code>Session.deriveMessages</code>。证据 E10–E14。</figcaption></figure>
+    </section>
+
+    <section id="deepdive">
+      <div class="section-head"><div class="kicker">08 / Mechanisms</div><div><h2>真正拉开差距的八个机制</h2><p>这里不看命名热闹，专看替换边界、恢复边界和安全边界。</p></div></div>
+      <div class="table-wrap"><table class="matrix">
+        <thead><tr><th>机制</th><th>Codex</th><th>DeepSeek Harness</th><th>架构含义</th></tr></thead>
+        <tbody>
+          <tr><td>外部控制协议</td><td><span class="label confirmed">【已确认】</span> App Server 是稳定产品边界；双向 JSON‑RPC，统一 Thread / Turn / Item 与事件。</td><td><span class="label confirmed">【已确认】</span> Web profile 有双边 Typed RPC；远端只做 unary，事件流单独传输。</td><td><span class="winner codex-text">Codex 更产品化</span>：跨客户端接入契约更集中。DeepSeek 的 Host/Client gateway 更像可组合 profile 组件。</td></tr>
+          <tr><td>Agent Loop 可替换性</td><td><span class="label inferred">【合理推断】</span> 公开默认路线是复用固定 Core；没有看到与 DeepSeek <code>AgentFactory</code> 对等的 loop 插件契约。</td><td><span class="label confirmed">【已确认】</span> Agent Loop、模型适配器、工具注册表、会话日志都明确可替换。</td><td><span class="winner dsh-text">DeepSeek 更框架化</span>，适合运行时实验；Codex 减少组合爆炸。</td></tr>
+          <tr><td>上下文与真相源</td><td><span class="label confirmed">【已确认】</span> Conversation history 供采样；rollout JSONL 选择性记录可重放项目，瞬态事件不全部持久化。</td><td><span class="label confirmed">【已确认】</span> append‑only Event Log 是模型上下文真相源；model-visible 内容必须可由日志重建。</td><td>DeepSeek 的审计 / 重放不变量更硬；Codex 将产品状态与持久化策略区分得更细。</td></tr>
+          <tr><td>模型抽象</td><td><span class="label confirmed">【已确认】</span> Provider 可配置 OpenAI、Bedrock、Ollama、LM Studio 等，但 wire contract 当前只有 Responses API。</td><td><span class="label confirmed">【已确认】</span> Provider / ModelAdapter 把多种供应商输出归一成 StreamChunk；请求头记录精确 adapter / model 元数据。</td><td><span class="winner dsh-text">DeepSeek 更协议中立</span>；Codex 对 Responses 语义整合更深。</td></tr>
+          <tr><td>工具执行</td><td><span class="label confirmed">【已确认】</span> ToolRouter + Registry 解析 function/custom/tool search；模型可声明 parallel tool calls，运行期维护 tool futures。</td><td><span class="label confirmed">【已确认】</span> native / code / both；有 bounded pool、exclusive barrier、模型顺序提交和 guarded pipeline。</td><td>两者都支持并发；DeepSeek 对调度规则和 Code Mode 的公开契约更细。</td></tr>
+          <tr><td>沙箱 / 权限</td><td><span class="label confirmed">【已确认】</span> Turn 级 approval、sandbox、permission profile；权限请求覆盖文件系统与网络，支持 user / auto review。</td><td><span class="label confirmed">【已确认】</span> Sandbox 明确只管文件系统；Linux bwrap/Landlock、macOS Seatbelt、Windows ACL；审批和 preset 独立组合并 fail‑closed。</td><td>Codex 权限面更贴近完整产品策略；DeepSeek 模块边界更清楚，但网络 / 进程限制需另组能力。</td></tr>
+          <tr><td>压缩 / 恢复</td><td><span class="label confirmed">【已确认】</span> Token 超阈值可自动 compaction；摘要和 world state 替换历史，Responses endpoint 还可执行服务端压缩。</td><td><span class="label confirmed">【已确认】</span> Compactor 是可选接缝；start / summary / end 进入事件日志，异常恢复可追加 interrupted turn。</td><td>Codex 优先无感持续运行；DeepSeek 优先把压缩与恢复做成可观察事件。</td></tr>
+          <tr><td>多 Agent</td><td><span class="label confirmed">【已确认】</span> AgentControl 在根线程树内提供 spawn、send、followup、wait、interrupt，共享工作目录。</td><td><span class="label confirmed">【已确认】</span> Subagent 是可选 provider seam，可接 in‑process、fork、ACP、Codex、Claude Code 等；另有实验性 team DAG / mailbox。</td><td>Codex 更像产品内建协作控制面；DeepSeek 更像多种执行后端的联邦接口。两者都不要求所有任务必须多 Agent。</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="context">
+      <div class="section-head"><div class="kicker">09 / Model & Context</div><div><h2>模型只是运行链中的一层</h2><p>两边都把模型请求包在上下文、工具和状态系统之间；真正的分歧是模型协议如何抽象、哪些状态必须可重建。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 07</span><h3>模型 Provider 与请求路由</h3></div><span class="label confirmed">【已确认】</span></div>
+        <div class="fig-body dual-diagram">
+          <div class="diagram-side"><h4 class="codex-text">Codex · Provider 可配，Wire 语义收敛</h4><div class="stack">
+            <div class="stack-node codex-node"><strong>SessionConfiguration</strong><span class="meta">provider + model</span></div>
+            <div class="stack-node codex-node"><strong>ModelClientSession</strong><span class="meta">turn-scoped</span><br>保持会话级连接与响应状态</div>
+            <div class="stack-node codex-node"><strong>ProviderInfo</strong><span class="meta">OpenAI / Bedrock / Ollama / LM Studio / custom</span></div>
+            <div class="stack-node codex-node"><strong>WireApi::Responses</strong><span class="meta">当前唯一 wire contract</span></div>
+            <div class="stack-node codex-node"><strong>ResponseEvent Stream</strong><br>assistant、tool call、usage、completion</div>
+          </div></div>
+          <div class="diagram-side"><h4 class="dsh-text">DeepSeek · Provider 与 Adapter 双层抽象</h4><div class="stack">
+            <div class="stack-node dsh-node"><strong>GenerateOptions</strong><span class="meta">provider + model</span></div>
+            <div class="stack-node dsh-node"><strong>llm/stream Waterfall</strong><span class="meta">可改写 / 短路</span></div>
+            <div class="stack-node dsh-node"><strong>prepareCall / resolveModel</strong><br>锁定 adapter、模型元数据和 retry policy</div>
+            <div class="stack-node dsh-node"><strong>LlmAdapter.stream()</strong><span class="meta">provider contract</span></div>
+            <div class="stack-node dsh-node"><strong>统一 StreamChunk</strong><br>请求头记录 adapter / model，支持重建</div>
+          </div></div>
+        </div>
+        <figcaption class="fig-note"><strong>架构取舍：</strong>Codex 允许 Provider 端点多样，但把 Harness 深度绑定到 Responses 事件语义；DeepSeek 把供应商协议转换留给 Adapter，Agent Loop 只消费统一流词汇。依据 E06、E21。</figcaption>
+      </figure>
+
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 08</span><h3>上下文、压缩与持久化</h3></div><span class="label confirmed">【已确认】</span></div>
+        <div class="fig-body grid2">
+          <div class="diagram-side"><h4 class="codex-text">Codex · History + Selective Rollout</h4><div class="context-layout">
+            <div class="context-source"><div class="context-item">Base / developer instructions</div><div class="context-item">Conversation history</div><div class="context-item">工具结果与当前 Turn</div><div class="context-item">模型可见工具规范</div></div>
+            <div class="context-hub">Prompt<br>Snapshot</div>
+            <div class="context-sink"><div class="context-item">Responses request</div><div class="context-item">assistant / tool event</div><div class="context-item">History update</div><div class="context-item">Rollout JSONL</div></div>
+          </div><div class="warning-band">达到阈值：自动摘要 + world state 替换历史；rollout policy 选择性保留 canonical items，并非全事件日志。</div></div>
+          <div class="diagram-side"><h4 class="dsh-text">DeepSeek · Event Log + Projection</h4><div class="context-layout">
+            <div class="context-source"><div class="context-item">user / assistant events</div><div class="context-item">tool call / result events</div><div class="context-item">turn / step boundaries</div><div class="context-item">runtime / request metadata</div></div>
+            <div class="context-hub">Session<br>Event Log</div>
+            <div class="context-sink"><div class="context-item">deriveMessages</div><div class="context-item">model-visible surface</div><div class="context-item">JSONL / SQLite</div><div class="context-item">replay / fork / recovery</div></div>
+          </div><div class="warning-band">Compaction 是可选 seam：start / summary / end 全部入日志，summary 通过 surface replace 生效，孤立 start 可被检测。</div></div>
+        </div>
+        <figcaption class="fig-note"><strong>系统真相：</strong>Codex 更接近“运行历史 + 产品状态 + 选择性 rollout”；DeepSeek 更明确规定“事件日志是模型上下文真相源”。依据 E07、E08、E14、E22。</figcaption>
+      </figure>
+
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 09</span><h3>核心运行实体与状态机</h3></div><span class="label inferred">【合理推断】</span></div>
+        <div class="fig-body">
+          <div class="entity-canvas">
+            <div class="entity core"><strong>User / Client</strong>提交任务、审批、steer、interrupt</div>
+            <div class="entity codex-entity"><strong>Thread / Session</strong>会话身份、配置、历史与活动任务</div>
+            <div class="entity codex-entity"><strong>Turn / Step</strong>一次用户意图及零到多次模型采样</div>
+            <div class="entity"><strong>Model Invocation</strong>provider、model、prompt snapshot、usage</div>
+            <div class="entity"><strong>Tool Call</strong>参数、权限、执行、结果、错误</div>
+            <div class="entity dsh-entity"><strong>Session Event</strong>seq、type、durable payload、projection</div>
+            <div class="entity"><strong>Approval</strong>具体动作、决策、reviewer、策略</div>
+            <div class="entity"><strong>Context Snapshot</strong>历史、instructions、工具与压缩结果</div>
+            <div class="entity"><strong>Rollout / Persistence</strong>JSONL、SQLite、flush、resume</div>
+            <div class="entity"><strong>Subagent</strong>parent、lineage、provider、status、report</div>
+          </div>
+          <div class="relation-row">User → Thread/Session → Turn/Step → Model Invocation ⇄ Tool Call → Result / Event → Persistence</div>
+          <h4>统一抽象状态机</h4>
+          <div class="state-machine"><div class="state">created</div><div class="state-arrow">→</div><div class="state active">running</div><div class="state-arrow">→</div><div class="state">waiting approval / tool</div><div class="state-arrow">→</div><div class="state dsh-active">completed / interrupted / failed</div></div>
+        </div>
+        <figcaption class="fig-note"><strong>边界：</strong>这是一张从两边公开状态对象抽象出的领域 ER / 状态图，不代表任一仓库真实数据库表结构。精确数据库 schema 与线上存储拓扑为 <span class="label unknown">【未知】</span>。依据 E02、E11、E14、E19。</figcaption>
+      </figure>
+    </section>
+
+    <section id="safety">
+      <div class="section-head"><div class="kicker">10 / Safety</div><div><h2>工具能跑不等于应该跑</h2><p>编程 Agent 的核心风险来自文件、命令、网络、凭据和外部副作用。两边都做审批与隔离，但责任分层方式不同。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 10</span><h3>工具执行、权限与沙箱控制链</h3></div><span class="label confirmed">【已确认】</span></div>
+        <div class="fig-body">
+          <h4 class="codex-text">Codex 控制链</h4>
+          <div class="security-pipe"><div class="security-node"><strong>模型 Tool Call</strong>function / custom / search</div><div class="security-arrow">→</div><div class="security-node"><strong>ToolRouter</strong>解析与 Registry 分发</div><div class="security-arrow">→</div><div class="security-node"><strong>Permission Profile</strong>filesystem + network 范围</div><div class="security-arrow">→</div><div class="security-node"><strong>Approval Reviewer</strong>user / auto_review</div></div>
+          <div class="security-pipe" style="margin-top:8px"><div class="security-node"><strong>Sandbox / Environment</strong>turn 级选择与覆盖</div><div class="security-arrow">→</div><div class="security-node"><strong>Tool Execution</strong>命令、文件、MCP 等</div><div class="security-arrow">→</div><div class="security-node"><strong>Result Event</strong>回写会话和客户端</div><div class="security-arrow">→</div><div class="security-node"><strong>Continue / Stop</strong>再采样或结束</div></div>
+          <h4 class="dsh-text" style="margin-top:22px">DeepSeek Harness 控制链</h4>
+          <div class="security-pipe"><div class="security-node"><strong>模型 Tool Call</strong>native / code / both</div><div class="security-arrow">→</div><div class="security-node"><strong>Pre-execute Waterfall</strong>策略改写或拒绝</div><div class="security-arrow">→</div><div class="security-node"><strong>Monotonic Guards</strong>观察/新鲜度不可放宽</div><div class="security-arrow">→</div><div class="security-node"><strong>Approval + FS Sandbox</strong>ask/never + OS backend</div></div>
+          <div class="warning-band"><strong>重要边界：</strong>DeepSeek 官方文档明确 Sandbox 只治理文件系统；网络和进程可见性在此能力之外。Codex 的公开 permission profile 则同时表达 filesystem 和 network。任何企业落地都还要验证秘密信息、供应链、命令注入、幂等与回滚。</div>
+        </div>
+        <figcaption class="fig-note"><strong>人工责任：</strong>批准一次工具调用只是允许执行，不证明结果正确。完成门仍需检查文件/命令/测试或外部状态。依据 E05、E15、E23。</figcaption>
+      </figure>
+    </section>
+
+    <section id="multiagent">
+      <div class="section-head"><div class="kicker">11 / Multi-Agent</div><div><h2>两者都有多 Agent，但控制模型不同</h2><p>不要把“存在子 Agent”误写成“所有任务都必须多 Agent”。默认单 Agent loop 仍是地基；子 Agent 只在可分解任务、上下文隔离或专门执行后端有价值。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 11</span><h3>根线程控制树 vs Provider 联邦</h3></div><span class="label confirmed">【已确认】</span></div>
+        <div class="fig-body agent-forest">
+          <div class="agent-tree"><h4 class="codex-text">Codex · Root AgentControl</h4><div class="root-node">Root Thread / AgentControl</div><div class="tree-branch"></div><div class="children"><div class="child-node">Child Thread A<br>独立 Session</div><div class="child-node">Child Thread B<br>独立 Session</div><div class="child-node">Child Thread C<br>独立 Session</div></div><div class="tree-tools"><span>spawn</span><span>send</span><span>followup</span><span>wait</span><span>interrupt</span></div><p class="small">根线程内建生命周期与通信控制；所有 Agent 共享工作目录，文件改动不是天然隔离。</p></div>
+          <div class="agent-tree dsh-tree"><h4 class="dsh-text">DeepSeek · Subagent Provider Seam</h4><div class="root-node">Parent Agent / ctx.subagents</div><div class="tree-branch"></div><div class="children"><div class="child-node">In-process / Fork<br>本地 provider</div><div class="child-node">ACP / DSH SDK<br>协议 provider</div><div class="child-node">Codex / Claude Code<br>产品 provider</div></div><div class="tree-tools"><span>start</span><span>continue</span><span>send_message</span><span>report</span><span>list</span></div><p class="small">多 provider 可共存；能力不支持时 fail loud。另有实验性的 Team roster / mailbox / task DAG。</p></div>
+        </div>
+        <figcaption class="fig-note"><strong>架构差异：</strong>Codex 把多 Agent 作为产品内建控制面；DeepSeek 把它设计成可选执行后端接口，再叠加实验性团队层。依据 E16、E17、E24。</figcaption>
+      </figure>
+    </section>
+
+    <section id="matrix">
+      <div class="section-head"><div class="kicker">12 / Ten layers</div><div><h2>十层产品架构对照</h2><p>把代码模块翻译成产品经理可用于选型、PRD 和技术评审的分层语言。</p></div></div>
+      <div class="table-wrap"><table class="matrix">
+        <thead><tr><th>层级</th><th>Codex As‑Is</th><th>DeepSeek Harness As‑Is</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr><td>1. 用户与场景</td><td>开发者使用 CLI / IDE / App 完成长周期编码任务。</td><td>Agent 框架开发者、平台团队、Runtime 研究者组合自定义代理。</td><td><span class="label inferred">【合理推断】</span> 前者偏终端产品，后者偏基础设施。</td></tr>
+          <tr><td>2. 价值主张</td><td>在受控环境里可靠地读写代码、跑工具、持续推进任务。</td><td>用统一事件与插件接缝组装可替换、可追踪的 Agent Runtime。</td><td>可靠产品内核 vs 可塑运行框架。</td></tr>
+          <tr><td>3. 交互 / 用户旅程</td><td>创建/恢复 Thread → 发起 Turn → 流式查看 Item → 审批 → 继续。</td><td>选择 profile/bundle → 创建 session → 发消息 → 观察 event → patch/替换能力。</td><td>Codex 的核心交互对象更稳定。</td></tr>
+          <tr><td>4. Agent / 工作流</td><td>Session + run_turn 固定闭环；支持工具 futures、steer、subagent tree。</td><td>ReactLoopAgent + inbox + waterfall + scheduler；loop 本身可替换。</td><td>DeepSeek 的控制流实验面更大。</td></tr>
+          <tr><td>5. 模型 / 工具</td><td>Responses API 语义，Provider endpoint 可配置；ToolRouter 统一分发。</td><td>ModelAdapter 归一流事件；native/code/both，工具守卫流水线。</td><td>Codex 深集成，DeepSeek 强抽象。</td></tr>
+          <tr><td>6. 上下文 / 记忆</td><td>History、base instructions、Skills/AGENTS 等进入上下文；自动 compaction。</td><td>Event Log projection 重建消息；compaction 作为可选插件事件。</td><td><span class="label unknown">【未知】</span> 两边线上长期记忆策略不由这些公开源码完整证明。</td></tr>
+          <tr><td>7. 知识 / RAG</td><td>MCP、文件、技能等可供给外部知识，但公开 Core 不等于内建向量 RAG 产品。</td><td>可通过 tools/plugins 接外部检索；官方核心同样不预设特定 RAG。</td><td>不要把“可接工具”误写成“内置完整知识库”。</td></tr>
+          <tr><td>8. 数据 / 状态</td><td>ThreadManager 活跃状态 + rollout JSONL + Thread/Turn/Item 产品状态。</td><td>Session Event Log + projection + JSONL/SQLite persistence。</td><td>状态模型是两边最显著差异之一。</td></tr>
+          <tr><td>9. 评测 / 可观测</td><td>事件流、telemetry、token usage、rollout 回放；仓库含多类 tests。</td><td>durable/live event、request header、runtime context、日志重放。</td><td><span class="label unknown">【未知】</span> 本报告未比较测试覆盖率和线上 SLO。</td></tr>
+          <tr><td>10. 安全 / 商业化</td><td>审批、沙箱、permission profile 已进入统一产品协议；Apache‑2.0。</td><td>文件沙箱、approval/preset、monotonic guards；MIT，当前 developer preview。</td><td><span class="label unknown">【未知】</span> 商业化、托管 SLA 与企业定价不在开源架构证据内。</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="governance">
+      <div class="section-head"><div class="kicker">13 / Evaluation</div><div><h2>完成、评测与运营不能混为一谈</h2><p>源码能证明两边都有事件、usage、rollout 或重放能力，但不能证明它们已经具备同一套线上评测、企业 SLA 或商业运营体系。</p></div></div>
+      <figure class="diagram">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 12</span><h3>三重完成门与运营指标</h3></div><span class="label suggested">【建议设计】</span></div>
+        <div class="fig-body">
+          <div class="value-chain"><div class="vc-node codex-node"><strong>① 模型 / 工具成功</strong>请求完成、工具返回、无协议错误<br><span class="small">不是最终完成</span></div><div class="vc-arrow">→</div><div class="vc-node dsh-node"><strong>② 任务状态完成</strong>目标文件/命令/测试/业务对象真实更新<br><span class="small">需要状态核验</span></div><div class="vc-arrow">→</div><div class="vc-node"><strong>③ 用户目标达成</strong>结果正确、可采纳、风险可接受、用户确认<br><span class="small">最终产品指标</span></div></div>
+          <div class="grid3" style="margin-top:14px">
+            <div class="cap-domain"><h4>质量评测</h4><ul><li>任务完成率与测试通过率</li><li>补丁正确性 / 回归</li><li>工具参数与结果忠实度</li><li>压缩后上下文保持率</li></ul></div>
+            <div class="cap-domain"><h4>安全与治理</h4><ul><li>越权调用 / 误批率</li><li>用户中断后后台停止率</li><li>秘密信息与注入防护</li><li>失败重试与重复副作用</li></ul></div>
+            <div class="cap-domain"><h4>产品与运营</h4><ul><li>首次价值时间 / 长任务恢复率</li><li>人工接管率 / 采纳率</li><li>Token、延迟、工具成本</li><li><span class="label unknown">【未知】</span> 公开企业 SLA、定价和退款</li></ul></div>
+          </div>
+        </div>
+        <figcaption class="fig-note"><strong>当前证据：</strong>可确认的是观测与重放基础，不是现成的公平基准。若做真实选型，应固定模型、工具、权限、任务集与完成判据后再测。依据 E08、E11、E14、E25。</figcaption>
+      </figure>
+    </section>
+
+    <section id="decision">
+      <div class="section-head"><div class="kicker">14 / Decision</div><div><h2>选型不要问“谁更强”</h2><p>问你的核心风险是产品不一致，还是框架不可替换。</p></div></div>
+      <div class="decision">
+        <article class="card codex-choice"><header><h3>更适合 Codex 的项目</h3></header><div class="body"><span class="label inferred">【合理推断】</span><ul><li>核心产品就是 coding agent / developer copilot</li><li>CLI、IDE、桌面端要共享一致会话与审批语义</li><li>团队希望减少 Runtime 组合决策，优先稳定迭代</li><li>愿意围绕 Responses API 及其事件语义深度集成</li><li>多 Agent 是产品功能，而非任意后端联邦层</li></ul><p class="small">代价：loop、状态投影和模型协议的替换自由度较低。</p></div></article>
+        <article class="card dsh-choice"><header><h3>更适合 DeepSeek Harness 的项目</h3></header><div class="body"><span class="label inferred">【合理推断】</span><ul><li>核心产品是 Agent 平台 / Runtime / 研究基础设施</li><li>必须同时接多模型协议、多文件系统或远程执行环境</li><li>要实验不同 loop、compaction、subagent provider</li><li>审计、重放和请求重建是硬性工程约束</li><li>团队能承担插件依赖、版本兼容和组合测试成本</li></ul><p class="small">代价：developer preview 阶段，产品协议和默认体验需要自行收敛。</p></div></article>
+      </div>
+      <figure class="diagram" style="margin-top:14px">
+        <div class="fig-head"><div><span class="fig-no">FIGURE 13</span><h3>产品控制成熟度 × Runtime 可替换性</h3></div><span class="label inferred">【合理推断】</span></div>
+        <div class="fig-body visual-scroll"><div class="risk-map">
+          <div class="risk-axis-y">产品控制与多端一致性　低 → 高</div>
+          <div class="quadrant q1"><strong>稳定产品内核</strong><span class="small">生命周期、权限、客户端协议已收敛</span><span class="plot-dot codex-dot">Codex</span></div>
+          <div class="quadrant q2"><strong>理想平台区</strong><span class="small">外壳稳定，同时内部接缝可替换</span></div>
+          <div class="quadrant q3"><strong>原型区</strong><span class="small">产品语义与 Runtime 接缝都未收敛</span></div>
+          <div class="quadrant q4"><strong>框架 / 研究区</strong><span class="small">替换自由高，产品收敛由集成方负责</span><span class="plot-dot dsh-dot">DeepSeek Harness</span></div>
+          <div class="risk-axis-x">Runtime / Provider / Execution World 可替换性　低 → 高</div>
+        </div></div>
+        <figcaption class="fig-note"><strong>注意：</strong>位置表示公开架构取向，不是质量评分。DeepSeek Harness 当前 developer preview；Codex 固定 Core 也不等于不能扩展工具、MCP、Skills 或 Provider。依据 E01、E06、E09、E18。</figcaption>
+      </figure>
+      <div class="callout risk" style="margin-top:14px"><h3>不要用当前证据做的决定</h3><p><span class="label unknown">【未知】</span> 不能据此声称 DeepSeek 更快、更省 Token，或 Codex 任务完成率更高；也不能把仓库活跃度直接等同于生产稳定性。若要技术选型，下一步应在同一模型、同一工具和同一任务集上跑等价基准。</p></div>
+    </section>
+
+    <section id="tobe">
+      <div class="section-head"><div class="kicker">15 / To-Be</div><div><h2>最值得借鉴的是混合，而非站队</h2><p>如果从零搭企业级 Agent 平台，可以把 Codex 的产品外壳与 DeepSeek 的内部接缝纪律组合起来。</p></div></div>
+      <figure class="diagram">
+      <div class="fig-head"><div><span class="fig-no">FIGURE 14</span><h3>建议的企业级混合架构</h3></div><span class="label suggested">【建议设计】</span></div>
+      <div class="fig-body"><div class="hybrid">
+        <h3><span class="label suggested">【建议设计】</span> Product Shell × Event Runtime</h3>
+        <div class="hybrid-grid">
+          <div class="hybrid-side">
+            <div class="hybrid-box"><strong>Codex 式外壳</strong><br><span class="small" style="color:#c9d6d0">稳定的 Thread / Turn / Item + 双向客户端协议</span></div>
+            <div class="hybrid-box">统一审批、权限请求、沙箱策略与客户端事件</div>
+            <div class="hybrid-box">CLI / IDE / Web / Desktop 使用同一生命周期语义</div>
+          </div>
+          <div class="hybrid-arrow">⇄</div>
+          <div class="hybrid-side">
+            <div class="hybrid-box"><strong>DeepSeek 式内核纪律</strong><br><span class="small" style="color:#d6d0f3">append‑only Event Log + projection 不变量</span></div>
+            <div class="hybrid-box">Model / Tool / FS / Subprocess / Compaction / Subagent 全部经显式 seam</div>
+            <div class="hybrid-box">请求可重建、插件可卸载、失败可恢复、工具结果按序提交</div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption class="fig-note"><strong>对应问题：</strong>它用稳定外协议解决多端产品不一致，用事件日志和能力接缝解决审计、恢复与供应商锁定；这不是任一仓库当前 As‑Is。建议按“单 Agent 可恢复闭环 → 安全工具执行 → 多 Agent”顺序落地。</figcaption>
+      </figure>
+      <div class="grid3" style="margin-top:14px">
+        <article class="card"><h3>控制面</h3><p><strong>稳定对象：</strong>Thread、Turn、Item、Approval、Permission Request。</p><p><strong>稳定协议：</strong>双向 RPC + 版本协商 + 服务端事件。</p></article>
+        <article class="card"><h3>数据面</h3><p><strong>唯一真相：</strong>不可变 Event Log。</p><p><strong>派生状态：</strong>模型消息、UI 时间线、审计视图、恢复点全部由 projection 生成。</p></article>
+        <article class="card"><h3>能力面</h3><p><strong>统一接缝：</strong>ModelAdapter、ToolExecutor、ExecutionWorld、Compactor、SubagentProvider。</p><p><strong>策略：</strong>权限与执行分离，但以一个产品 preset 对外呈现。</p></article>
+      </div>
+      <div class="callout design" style="margin-top:14px"><h3>最小落地顺序</h3><p><span class="label suggested">【建议设计】</span> 先定事件模型与外部生命周期 → 再定模型/工具接缝 → 再做沙箱和审批 → 最后扩展多 Agent。不要先做 team DAG；单 Agent 的可恢复、可审计闭环才是地基。</p></div>
+    </section>
+
+    <section id="risks">
+      <div class="section-head"><div class="kicker">16 / Risks</div><div><h2>关键风险与待验证项</h2><p>这些问题会直接改变技术选型，但公开静态源码不能给出答案。</p></div></div>
+      <div class="grid2">
+        <article class="card"><h3>Codex 待验证</h3><ul><li><span class="label unknown">【未知】</span> 非 OpenAI 模型经 Responses 兼容层时，流事件、工具调用、压缩语义能否无损。</li><li><span class="label unknown">【未知】</span> 大规模并发 Thread 下的内存占用、rollout IO 和 App Server backpressure。</li><li><span class="label unknown">【未知】</span> 开源 Core 与线上 Codex 产品的功能差集。</li></ul></article>
+        <article class="card"><h3>DeepSeek 待验证</h3><ul><li><span class="label unknown">【未知】</span> plugin 组合在长时间运行下的卸载、异常隔离与版本兼容成本。</li><li><span class="label unknown">【未知】</span> developer preview 到稳定协议前，profile/API 的破坏性变更频率。</li><li><span class="label unknown">【未知】</span> 文件沙箱以外的网络、进程、密钥访问如何形成统一企业策略。</li></ul></article>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <div class="section-head"><div class="kicker">17 / Evidence</div><div><h2>证据账本</h2><p>每条关键判断都对应一手资料。S 为来源快照，E 为本报告综合证据；链接锁定到本次研究使用的提交。</p></div></div>
+      <div class="sources">
+        <div class="source"><strong><span class="source-id">S01</span> Codex 仓库快照</strong><span>commit 51ebf5b · 2026‑08‑21</span></div>
+        <div class="source"><strong><span class="source-id">S02</span> OpenAI Agent Loop 文章</strong><span>Unrolling the Codex agent loop</span></div>
+        <div class="source"><strong><span class="source-id">S03</span> OpenAI App Server 文章</strong><span>Unlocking the Codex harness</span></div>
+        <div class="source"><strong><span class="source-id">S04</span> DeepSeek Harness 仓库快照</strong><span>commit b150a55 · 0.1.1‑rc.2 · developer preview</span></div>
+        <div class="source"><strong><span class="source-id">S05</span> DeepSeek Architecture</strong><span>Everything is a plugin · Event architecture</span></div>
+        <div class="source"><strong><span class="source-id">S06</span> DeepSeek Subsystem Docs</strong><span>Session / tools / sandbox / subagent / gateway</span></div>
+      </div>
+      <div class="table-wrap" style="margin-top:14px"><table class="ledger">
+        <thead><tr><th>ID</th><th>等级</th><th>支持的判断</th><th>一手来源</th></tr></thead>
+        <tbody>
+          <tr><td>E01</td><td><span class="label confirmed">【已确认】</span></td><td>Codex Core 是每条 thread 的 library/runtime，App Server 暴露稳定外协议。</td><td><a href="https://openai.com/index/unlocking-the-codex-harness/">OpenAI · App Server</a>；<a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/app-server/README.md#L20-L83">S01 · app-server README</a></td></tr>
+          <tr><td>E02</td><td><span class="label confirmed">【已确认】</span></td><td>Thread / Turn / Item 与双向 JSON‑RPC 构成跨客户端生命周期。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/app-server/README.md#L20-L83">S01 · protocol/lifecycle</a></td></tr>
+          <tr><td>E03</td><td><span class="label confirmed">【已确认】</span></td><td>模型输出工具调用就执行并把结果送入下一采样；助手消息结束 loop。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/session/turn.rs#L139-L151">S01 · turn.rs</a>；<a href="https://openai.com/index/unrolling-the-codex-agent-loop/">S02 · Agent Loop</a></td></tr>
+          <tr><td>E04</td><td><span class="label confirmed">【已确认】</span></td><td>Prompt 包含历史、instructions、工具规范和 output schema，并允许 parallel_tool_calls。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/session/turn.rs#L1311-L1327">S01 · Prompt construction</a></td></tr>
+          <tr><td>E05</td><td><span class="label confirmed">【已确认】</span></td><td>ToolRouter 解析并经 Registry 分发 function/custom/tool search。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/tools/router.rs#L68-L145">S01 · ToolRouter</a></td></tr>
+          <tr><td>E06</td><td><span class="label confirmed">【已确认】</span></td><td>Provider endpoint 可配置，但当前 WireApi 只有 Responses。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/model-provider-info/src/lib.rs#L60-L125">S01 · ProviderInfo</a></td></tr>
+          <tr><td>E07</td><td><span class="label confirmed">【已确认】</span></td><td>自动 compaction 会用摘要/world state 替换历史；也支持 Responses compact endpoint。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/compact.rs#L347-L385">S01 · compact.rs</a>；<a href="https://openai.com/index/unrolling-the-codex-agent-loop/">S02 · compaction</a></td></tr>
+          <tr><td>E08</td><td><span class="label confirmed">【已确认】</span></td><td>rollout 使用 JSONL，但策略选择性持久化 canonical items，并不等于全事件日志。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/rollout/src/recorder.rs#L77-L136">S01 · recorder</a>；<a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/rollout/src/policy.rs#L8-L59">S01 · persistence policy</a></td></tr>
+          <tr><td>E09</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek Harness 声明 everything is a plugin，Loop/Model/Tool/Session 无特权核心。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/architecture.md#L9-L35">S05 · Architecture</a></td></tr>
+          <tr><td>E10</td><td><span class="label confirmed">【已确认】</span></td><td>ReactLoopAgent 每次模型请求从 Session Log 派生，inbox 支持 followup/steer/inject/cancel。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/packages/core/agent-loop/src/agent.ts#L1-L4">S04 · agent.ts</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/packages/core/agent-loop/src/agent.ts#L113-L140">S04 · inbox</a></td></tr>
+          <tr><td>E11</td><td><span class="label confirmed">【已确认】</span></td><td>Turn 包含零到多个 Step；Step 是一次模型请求加其工具执行，durable/live 事件分层。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/architecture.md#L53-L103">S05 · Event architecture</a></td></tr>
+          <tr><td>E12</td><td><span class="label confirmed">【已确认】</span></td><td>工具调度采用 bounded rolling pool、exclusive barrier，并按模型顺序提交结果。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/packages/core/agent-loop/src/tool-calls.ts#L1-L11">S04 · tool-calls.ts</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/packages/core/agent-loop/src/tool-calls.ts#L112-L245">S04 · scheduler</a></td></tr>
+          <tr><td>E13</td><td><span class="label confirmed">【已确认】</span></td><td>Tool 系统支持 native/code/both，Code Mode 生成确定性 SDK，并重新进入策略检查。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/packages/core/tools/README.md#L1-L20">S04 · tools</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/packages/core/tools/README.md#L116-L123">S04 · Code Mode</a></td></tr>
+          <tr><td>E14</td><td><span class="label confirmed">【已确认】</span></td><td>Session 是 append-only event store；模型消息由 projection 派生，支持 JSONL/SQLite 持久化。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/session.md#L363-L514">S06 · Session</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/persistence.md#L231-L237">S06 · Persistence</a></td></tr>
+          <tr><td>E15</td><td><span class="label confirmed">【已确认】</span></td><td>Sandbox 仅约束文件系统，平台后端不同；approval/preset 是独立能力且 fail-closed。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/sandbox.md#L1-L30">S06 · Sandbox</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/approval.md#L1-L34">S06 · Approval</a></td></tr>
+          <tr><td>E16</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek Subagent 是可选 provider seam；Agent Team 是实验性、显式启用的 durable roster/mailbox/task DAG。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/subagent.md#L1-L7">S06 · Subagent</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/agent-team.md#L1-L77">S06 · Agent Team</a></td></tr>
+          <tr><td>E17</td><td><span class="label confirmed">【已确认】</span></td><td>Codex 多 Agent 由根线程树控制 spawn/send/followup/wait/interrupt。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/agent/control.rs#L100-L122">S01 · AgentControl</a>；<a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/session/multi_agents.rs#L11-L59">S01 · multi_agents</a></td></tr>
+          <tr><td>E18</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek 当前仓库明确标为 developer preview，许可证 MIT；Codex 仓库许可证 Apache‑2.0。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/README.md#L5-L12">S04 · status</a>；<a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/README.md#L74-L81">S01 · license</a></td></tr>
+          <tr><td>E19</td><td><span class="label confirmed">【已确认】</span></td><td>Codex Session 同时最多一个运行任务，可被用户输入中断；ThreadManager 负责创建并在内存维护线程。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/session/session.rs#L37-L71">S01 · Session</a>；<a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/thread_manager.rs#L216-L238">S01 · ThreadManager</a></td></tr>
+          <tr><td>E20</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek 的 Filesystem 是 agent-loop 外部的可选能力接缝；本地 Provider、工具 Consumer 与观察策略可独立组合。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/filesystem.md#L1-L15">S06 · Filesystem</a></td></tr>
+          <tr><td>E21</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek LlmAdapter 是 Provider 契约；prepareCall 将 adapter 注册、模型解析、retry policy 与 dispatch 绑定。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/llm-streaming.md#L665-L689">S06 · LLM streaming</a></td></tr>
+          <tr><td>E22</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek Compaction 是可选 seam；start/summary/end 构成持久化生命周期，崩溃中断会留下可检测的孤立锁。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/compaction.md#L5-L19">S06 · Compaction lifecycle</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/compaction.md#L60-L86">S06 · Compaction service</a></td></tr>
+          <tr><td>E23</td><td><span class="label confirmed">【已确认】</span></td><td>Codex SessionConfiguration 同时携带 approval policy、reviewer、permission profile 与 sandbox 设置；App Server 支持 user / auto_review。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/session/session.rs#L73-L100">S01 · SessionConfiguration</a>；<a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/app-server/README.md#L902-L915">S01 · approvalsReviewer</a></td></tr>
+          <tr><td>E24</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek Subagent 允许多个命名 Provider 共存，包括 in-process、fork、ACP、Codex、Claude Code 与 DSH SDK。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/subsystems/subagent.md#L1-L13">S06 · Subagent providers</a></td></tr>
+          <tr><td>E25</td><td><span class="label confirmed">【已确认】</span></td><td>两边都有运行观测基础：Codex 在 turn loop 记录 provider/model/approval/sandbox 与 usage；DeepSeek 区分 durable 与 live events。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/core/src/session/turn.rs#L2190-L2250">S01 · turn telemetry</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/architecture.md#L53-L90">S05 · event categories</a></td></tr>
+          <tr><td>E26</td><td><span class="label confirmed">【已确认】</span></td><td>Codex App Server 的 Turn 输入支持文本、本地/内联图片和音频，并允许 turn 级环境与配置覆盖。</td><td><a href="https://github.com/openai/codex/blob/51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e/codex-rs/app-server/README.md#L890-L900">S01 · turn input/config</a></td></tr>
+          <tr><td>E27</td><td><span class="label confirmed">【已确认】</span></td><td>DeepSeek Web profile 使用双边 typed RPC；远端契约限定 unary 方法，事件流与 RPC 调用分离。</td><td><a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/api-gateway.md#L80-L93">S06 · API gateway</a>；<a href="https://github.com/deepseek-ai/deepseek-harness/blob/b150a551b8d465e31e418e1b2eaf5e79bbb7d28e/docs/api-gateway.md#L158-L162">S06 · remote boundary</a></td></tr>
+          <tr><td>E28</td><td><span class="label inferred">【合理推断】</span></td><td>Codex 的稳定产品外壳与 DeepSeek 的事件/接缝纪律可以互补，但混合架构是本报告建议，不是任一仓库现状。</td><td>E01、E02、E09、E14、E22、E27 的综合归纳</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </main>
+
+  <footer><div class="shell footer-grid"><div><strong>Codex vs DeepSeek Harness</strong><br>证据化产品架构拆解 · 2026‑08‑22</div><div>结论只覆盖上述源码快照。后续提交可能改变模块、协议或成熟度判断。</div></div></footer>
+</body>
+</html>
